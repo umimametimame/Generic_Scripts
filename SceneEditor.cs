@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using My;
+using AddClass;
 
 /// <summary>
 /// 各シーンに一つのみ配置<br/>

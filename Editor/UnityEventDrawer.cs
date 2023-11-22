@@ -10,7 +10,6 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Events;
-
 [CustomPropertyDrawer(typeof(UnityEvent), true)]
 [CustomPropertyDrawer(typeof(UnityEvent<bool>), true)]
 public class UnityEventDrawer : PropertyDrawer

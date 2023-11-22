@@ -4,15 +4,13 @@ using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine.Assertions;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace My
+namespace AddClass
 {
 
     public class GenericFunctions : MonoBehaviour
@@ -104,6 +102,14 @@ namespace My
             return Mathf.Repeat(Mathf.Atan2(v.x, v.y) * Mathf.Rad2Deg, 360);
         }
 
+        public static Vector2 DegToVec(float deg)
+        {
+            Vector2 vec;
+            vec.x = MathF.Cos(deg);
+            vec.y = MathF.Sin(deg);
+            return vec;
+        }
+
         public static float GetAngleByVec2(Vector3 start, Vector3 target)
         {
             float angle;
@@ -113,9 +119,20 @@ namespace My
             return angle;
         }
 
+
         public static Vector3 CameraToMouse()
         {
             return new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y, 0.0f);
+        }
+
+        public static bool IsEven(int value)
+        {
+            if (value / 2 == 0)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -389,10 +406,10 @@ namespace My
             }
         }
         /// <summary>
-         /// CanvasのRender Mode が Scene Space - Overlay の場合に、ワールド座標をスクリーン座標に変換する
-         /// </summary>
-         /// <returns>変換されたスクリーン座標</returns>
-         /// <param name="position">対象のワールド座標</param>
+        /// CanvasのRender Mode が Scene Space - Overlay の場合に、ワールド座標をスクリーン座標に変換する
+        /// </summary>
+        /// <returns>変換されたスクリーン座標</returns>
+        /// <param name="position">対象のワールド座標</param>
         public static Vector2 ToScreenPositionCaseScreenSpaceOverlay(this Vector3 position)
         {
             return position.ToScreenPositionCaseScreenSpaceOverlay(Camera.main);
@@ -457,6 +474,28 @@ namespace My
             );
             return retPosition;
         }
+        public static List<string> SearchTypes<T>()
+        {
+            List<string> typeNames = new List<string>();
+
+            // このスクリプトのアセンブリを取得
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+            // このスクリプトのアセンブリから型を取得
+            Type[] types = assembly.GetTypes();
+
+            // ジェネリック型と一致する型を探す
+            foreach (Type type in types)
+            {
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(T))
+                {
+                    // ジェネリック型の名前をリストに追加
+                    typeNames.Add(type.FullName);
+                }
+            }
+
+            return typeNames;
+        }
     }
 
     /// <summary>
@@ -492,10 +531,11 @@ namespace My
         Ending,
     }
 
-    [Serializable] public class Exist
+    [Serializable]
+    public class Exist
     {
         [field: SerializeField, NonEditable] public ExistState state { get; private set; } = ExistState.Disable;
-        [field: SerializeField] public Action initialize { get; set; }  
+        [field: SerializeField] public Action initialize { get; set; }
         [field: SerializeField] public Action disable { get; set; }
         [field: SerializeField] public Action start { get; set; }
         [field: SerializeField] public Action enable { get; set; }
@@ -545,7 +585,7 @@ namespace My
 
         public void Start()
         {
-                state = ExistState.Start;
+            state = ExistState.Start;
         }
 
         /// <summary>
@@ -598,7 +638,8 @@ namespace My
         }
     }
 
-    [Serializable] public class SmoothRotate
+    [Serializable]
+    public class SmoothRotate
     {
         [SerializeField] private float speed;
         [SerializeField] private GameObject targetObj;
@@ -614,13 +655,14 @@ namespace My
         }
     }
 
-    [Serializable] public class EasingAnimator
+    [Serializable]
+    public class EasingAnimator
     {
-        [field: SerializeField, NonEditable] public float nowRatio { get; private set; } 
+        [field: SerializeField, NonEditable] public float nowRatio { get; private set; }
         [field: SerializeField, NonEditable] public float maxTime { get; private set; }
         [SerializeField] private AnimationCurve curve;
         public Animator animator { get; set; }
-        public void Initialize(float maxTime,Animator animator = null)
+        public void Initialize(float maxTime, Animator animator = null)
         {
             if (animator != null) { this.animator = animator; }
             this.maxTime = maxTime;
@@ -669,7 +711,7 @@ namespace My
         /// <param name="start"></param>
         public void Initialize(bool start, bool autoReset = true, float interval = 0.0f)
         {
-            if(interval != 0.0f) { this.interval = interval; }
+            if (interval != 0.0f) { this.interval = interval; }
             this.autoReset = autoReset;
             if (start == true)
             {
@@ -689,7 +731,7 @@ namespace My
             switch (valueIncreseType)
             {
                 case IncreseType.DeltaTime:
-                value += Time.deltaTime;
+                    value += Time.deltaTime;
 
                     break;
 
@@ -704,7 +746,7 @@ namespace My
             }
             if (value >= interval)
             {
-                if(reached == false)
+                if (reached == false)
                 {
                     reached = true;
                     reachAction?.Invoke();
@@ -712,7 +754,7 @@ namespace My
 
                 active = true;
                 activeAction?.Invoke();
-                if(autoReset == true) { Reset(); }
+                if (autoReset == true) { Reset(); }
             }
             else
             {
@@ -732,7 +774,8 @@ namespace My
     /// <summary>
     /// 範囲毎にActionを実行する
     /// </summary>
-    [Serializable] public class ThresholdRatio
+    [Serializable]
+    public class ThresholdRatio
     {
         [SerializeField, NonEditable] private bool reaching;
         [SerializeField, NonEditable] private bool beforeBool;
@@ -771,13 +814,13 @@ namespace My
         public void Update(float value)
         {
             currentValue = value;
-            
+
             // 範囲内なら
             if (thresholdRange.x <= currentValue && currentValue <= thresholdRange.y) { reaching = true; }
             else { reaching = false; }
 
 
-            if(reaching == true)        // 範囲内で
+            if (reaching == true)        // 範囲内で
             {
                 if (beforeBool == false)    // 入った瞬間なら
                 {
@@ -788,7 +831,7 @@ namespace My
 
             }
 
-            if(beforeBool == true)      // 前回範囲内で
+            if (beforeBool == true)      // 前回範囲内で
             {
                 if (reaching == false)  // 出る瞬間なら
                 {
@@ -796,7 +839,7 @@ namespace My
                 }
             }
 
-            if(reaching == false)   // 範囲外なら
+            if (reaching == false)   // 範囲外なら
             {
                 outOfRangeAction?.Invoke();
             }
@@ -810,7 +853,8 @@ namespace My
     /// <summary>
     /// Update内でも一度だけ実行できる
     /// </summary>
-    [Serializable] public class MomentAction
+    [Serializable]
+    public class MomentAction
     {
         public Action action { get; set; }
         [SerializeField, NonEditable] private bool activated;
@@ -822,9 +866,9 @@ namespace My
 
         public void Enable()
         {
-            if(activated == false) 
-            { 
-                action?.Invoke(); 
+            if (activated == false)
+            {
+                action?.Invoke();
                 activated = true;
             }
         }
@@ -852,7 +896,8 @@ namespace My
 
     }
 
-    [Serializable] public class EntityAndPlan<T>
+    [Serializable]
+    public class EntityAndPlan<T>
     {
         [field: SerializeField, NonEditable] public T entity { get; set; }
         [field: SerializeField, NonEditable] public T plan { get; set; }
@@ -863,7 +908,8 @@ namespace My
         }
     }
 
-    [Serializable] public class HorizontalRect
+    [Serializable]
+    public class HorizontalRect
     {
         [field: SerializeField] public float x { get; private set; }
         [field: SerializeField] public float y { get; private set; }
@@ -901,8 +947,8 @@ namespace My
 
         public float X
         {
-            set 
-            { 
+            set
+            {
                 x = value;
                 entity = new Rect(this.x, y, this.width, height);
             }
@@ -919,6 +965,37 @@ namespace My
 
     }
 
+    public class ValueChecker<T> where T : struct
+    {
+        [SerializeField] private T value;
+        [SerializeField] private T beforeValue;
+        [SerializeField] private bool changed;
+        public Action changedAction { get; set; }
+
+        public void Initialize(T value)
+        {
+            Reset(value);
+            changedAction = null;
+        }
+
+        public void Reset(T value)
+        {
+            this.value = value;
+            beforeValue = value;
+            changed = false;
+        }
+
+        public void Update(T value)
+        {
+            this.value = value;
+            changed = !value.Equals(beforeValue);   // 変更されていたら
+
+            if (changed == true)
+            {
+                changedAction?.Invoke();
+            }
+        }
+    }
     /// <summary>
     /// SpriteRenderer,Image,TMProのすべてを取得する
     /// </summary>
@@ -938,7 +1015,7 @@ namespace My
             sprites = obj.GetComponentsInChildren<SpriteRenderer>();
             images = obj.GetComponentsInChildren<Image>();
             texts = obj.GetComponentsInChildren<TextMeshProUGUI>();
-            if(sprites.Length == 0 && images.Length == 0 && texts.Length == 0)
+            if (sprites.Length == 0 && images.Length == 0 && texts.Length == 0)
             {
                 Debug.LogError("いずれもアタッチされていません");
             }
@@ -1052,7 +1129,8 @@ namespace My
     /// <summary>
     /// 図形のlocalScale.xまたはyを参照値に合わせて拡縮させる
     /// </summary>
-    [Serializable] public class BarByParam
+    [Serializable]
+    public class BarByParam
     {
 
         [SerializeField] private GameObject bar;
@@ -1087,16 +1165,16 @@ namespace My
     /// <summary>
     /// serializedObjectUpdateに関数を追加する
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class MyEditor<T> : Editor where T : UnityEngine.Object
+    /// <typeparam name="CustomEditorType"></typeparam>
+    public class MyEditor<CustomEditorType> : Editor where CustomEditorType : UnityEngine.Object
     {
         protected Action serializedObjectUpdate;
-        protected T tg;
+        protected CustomEditorType tg;
         protected void Initialize()
         {
-            tg = (T)target;
+            tg = (CustomEditorType)target;
         }
-        
+
 
         public override void OnInspectorGUI()
         {

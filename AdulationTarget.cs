@@ -1,5 +1,3 @@
-using My;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class AdulationTarget : MonoBehaviour
