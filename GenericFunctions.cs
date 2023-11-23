@@ -183,6 +183,7 @@ namespace AddClass
         {
             return rect.x + rect.width;
         }
+
         /// <summary>
         /// Animationの長さを返す
         /// </summary>
@@ -522,6 +523,23 @@ namespace AddClass
         }
     }
 
+    [Serializable] public class TransformOffset
+    {
+        [SerializeField] private Vector3 vec3Offset;
+        [SerializeField] private Vector2 vec2Offset;
+
+        public void Update(Transform transform)
+        {
+            transform.position += vec3Offset; 
+            transform.position += new Vector3(vec2Offset.x, vec2Offset.y, 0.0f);
+
+        }
+        public void Update(GameObject obj)
+        {
+            obj.transform.position += vec3Offset;
+            obj.transform.position += new Vector3(vec2Offset.x, vec2Offset.y, 0.0f);
+        }
+    }
 
     public enum ExistState
     {
@@ -649,6 +667,7 @@ namespace AddClass
         }
         public void Update(Vector3 direction)
         {
+            if(direction == Vector3.zero) { return; }
             Quaternion me = targetObj.transform.rotation;
             Quaternion you = Quaternion.LookRotation(direction);
             targetObj.transform.rotation = Quaternion.RotateTowards(me, you, speed * Time.deltaTime);
@@ -1207,16 +1226,25 @@ namespace AddClass
 
 
     /// <summary>
-    /// OnEnableに
+    /// 表示する変数名のstringを用意する<br/>
+    /// Updateを上書きする
     /// </summary>
     public class MyPropertyDrawer : PropertyDrawer
     {
-        protected Rect pos;
+        public Rect pos;
+        public SerializedProperty prop;
+        public float boolWidth = 15;
+        public float uniformedLabelWidth;
+        public float uniformedFieldWidth;
+        public float distance = 4.1f;       // PropertyDrawerの定数
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
             {
-                pos = position;
+                pos = position; 
+                pos = EditorGUI.PrefixLabel(pos, GUIUtility.GetControlID(FocusType.Passive), label);
+
+                prop = property;
 
                 // 子のフィールドをインデントしない 
                 var indent = EditorGUI.indentLevel;
@@ -1231,23 +1259,296 @@ namespace AddClass
             EditorGUI.EndProperty();
 
 
-            EditorGUI.BeginDisabledGroup(true);
-            {
-            }
-            EditorGUI.EndDisabledGroup();
         }
 
         public float RightEnd(Rect pos)
         {
             return pos.width - 90;
         }
-        protected virtual void Update(Rect ops, SerializedProperty property, GUIContent label)
+        protected virtual void Update(Rect pos, SerializedProperty prop, GUIContent label)
         { }
 
         protected virtual void ReadOnly(Rect pos, SerializedProperty property, GUIContent label)
         { }
 
+        /// <summary>
+        /// Updateの最初に行う<br/>
+        /// 引数は表示する要素数
+        /// </summary>
+        /// <param name="horizontalElements"></param>
+        public void Uniform(int horizontalElements, float labelWidth = 30)
+        {
+            uniformedLabelWidth = labelWidth;
+            uniformedFieldWidth = pos.width / horizontalElements - uniformedLabelWidth - distance * 2;
+
+        }
+
+        public void UniformedDraw(List<LabelAndproperty> lavProps)
+        {
+
+            for (int i = 0; i < lavProps.Count; i++)
+            {
+                lavProps[i].Set(pos, prop);
+                if (i == 0)
+                {
+                    lavProps[i].InitialPosSet(pos.x, uniformedLabelWidth, uniformedFieldWidth);
+                    
+                }
+                else
+                {
+                    LabelAndproperty neighbor = lavProps[i - 1];
+                    lavProps[i].Uniform(neighbor);
+                }
+                lavProps[i].Draw();
+            }
+        }
+
+        public void UniformedDraw(List<LabelAndproperty> lavProps, float labelWidth, float propWidth)
+        {
+
+            for (int i = 0; i < lavProps.Count; i++)
+            {
+                lavProps[i].Set(pos, prop);
+                if (i == 0)
+                {
+                    lavProps[i].InitialPosSet(pos.x, labelWidth, propWidth);
+
+                }
+                else
+                {
+                    LabelAndproperty neighbor = lavProps[i - 1];
+                    lavProps[i].Uniform(neighbor);
+                }
+                lavProps[i].Draw();
+            }
+        }
+        public class LabelAndproperty
+        {
+            public HorizontalRect labelRect;
+            public string label;
+            public HorizontalRect propertyRect;
+            public SerializedProperty property;
+            public string propName;
+            public LabelAndproperty neighbor;
+            public EditType edit;
+
+            /// <summary>
+            /// コンストラクタ
+            /// </summary>
+            /// <param name="rect"></param>
+            /// <param name="property"></param>
+            
+            public LabelAndproperty(string propertyName)
+            {
+                this.propName = propertyName;
+            }
+            public void Set(Rect rect, SerializedProperty property)
+            {
+                labelRect = new HorizontalRect(rect);
+                propertyRect = new HorizontalRect(rect);
+                this.property = property.FindPropertyRelative(propName);
+
+                char[] array = this.property.displayName.ToCharArray();
+                array[0] = char.ToUpper(array[0]);  // 戦闘を大文字にする
+
+                label = new string(array);
+            }
+
+
+            public void InitialPosSet(float x, float labelWidth, float fieldWidth)
+            {
+                labelRect.Set(x, labelWidth);
+                propertyRect.Set(AddFunction.Neighbor(labelRect) + 5, fieldWidth);
+            }
+            public void NeighborPosSet(float labelWidth, float fieldWidth)
+            {
+                labelRect.Set(AddFunction.Neighbor(neighbor.propertyRect) + 5, labelWidth);
+                propertyRect.Set(AddFunction.Neighbor(labelRect) + 5, fieldWidth);
+            }
+            public void Draw()
+            {
+                switch (edit)
+                {
+
+                    case EditType.None:
+                        DrawPropertyField();
+                        break;
+
+                    case EditType.NonEditable:
+                        EditorGUI.LabelField(labelRect.entity, label);
+                        
+                        EditorGUI.BeginDisabledGroup(true);
+                        {
+                            EditorGUI.PropertyField(propertyRect.entity, property, GUIContent.none);
+                        }
+                        EditorGUI.EndDisabledGroup();
+                        break;
+
+                    case EditType.NonEditableInGame:
+                        EditorGUI.LabelField(labelRect.entity, label);
+
+                        if (EditorApplication.isPlaying)
+                        {
+                            EditorGUI.BeginDisabledGroup(true);
+                            {
+                                EditorGUI.PropertyField(propertyRect.entity, property, GUIContent.none);
+                            }
+                            EditorGUI.EndDisabledGroup();
+                        }
+                        else
+                        {
+                            EditorGUI.PropertyField(propertyRect.entity, property, GUIContent.none);
+
+                        }
+
+                        break;
+                }
+            }
+            public void DrawPropertyField()
+            {
+                EditorGUI.LabelField(labelRect.entity, label);
+                EditorGUI.PropertyField(propertyRect.entity, property, GUIContent.none);
+            }
+
+            public void Uniform(LabelAndproperty target)
+            {
+                labelRect.Set(AddFunction.Neighbor(target.propertyRect) + 5, target.labelRect.width);
+                propertyRect.Set(AddFunction.Neighbor(labelRect) + 5, target.propertyRect.width);
+            }
+        }
+        public enum EditType
+        {
+            None,
+            NonEditable,
+            NonEditableInGame,
+        }
     }
 
 #endif
+
+    #region インスペクタープロパティ
+    /// <summary>
+    /// 数値の中身と最大値を含む<br/>
+    /// インスタンス化不要
+    /// </summary>
+    [Serializable]
+    public class Parameter
+    {
+        public float entity;
+        public float max;
+        public float autoRecoverValue;
+        public void Initialize()
+        {
+            entity = max;
+        }
+
+        public void Update()
+        {
+            entity += autoRecoverValue;
+            ReturnRange();
+        }
+
+        public void Update(float changeEntity)
+        {
+            entity += changeEntity;
+            ReturnRange();
+        }
+
+        public void ReturnRange()
+        {
+
+            if (entity > max) { entity = max; }
+            else if (entity < 0.0f) { entity = 0.0f; }
+        }
+
+        public bool inRange
+        {
+            get
+            {
+                if (entity <= max)
+                {
+                    if (entity >= 0.0f)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+
+        public bool overZero    // entityが0以下なら
+        {
+            get
+            {
+                if (entity <= 0.0f) { return true; }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 使用可能なら
+        /// </summary>
+        /// <param name="cost"></param>
+        /// <returns></returns>
+        public bool CostJudge(float cost)
+        {
+            if (entity - cost > 0.0f)
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+#if UNITY_EDITOR
+    [CustomPropertyDrawer(typeof(Parameter))]
+    public class ParameterDrawer : MyPropertyDrawer
+    {
+
+        LabelAndproperty entity = new LabelAndproperty(nameof(entity));
+        LabelAndproperty max = new LabelAndproperty(nameof(max));
+        LabelAndproperty autoRecoverValue = new LabelAndproperty(nameof(autoRecoverValue));
+        protected override void Update(Rect _pos, SerializedProperty property, GUIContent label)
+        {
+
+            entity.edit = EditType.NonEditable;
+            List<LabelAndproperty> list = new List<LabelAndproperty>() { entity, max, autoRecoverValue };
+
+            Uniform(list.Count, 40);
+            UniformedDraw(list);
+        }
+    }
+#endif
+
+    [Serializable] public class Vec3Bool
+    {
+        public bool x;
+        public bool y;
+        public bool z;
+    }
+
+#if UNITY_EDITOR
+    [CustomPropertyDrawer(typeof(Vec3Bool))]
+    public class Vec3BoolDrawer : MyPropertyDrawer 
+    {
+        LabelAndproperty x = new LabelAndproperty("x");
+        LabelAndproperty y = new LabelAndproperty("y");
+        LabelAndproperty z = new LabelAndproperty("z");
+        protected override void Update(Rect _pos, SerializedProperty _prop, GUIContent _label)
+        {
+            
+            List<LabelAndproperty> lavProps = new List<LabelAndproperty>() { x, y, z };
+            Uniform(lavProps.Count, 10);
+            foreach(LabelAndproperty l in lavProps)
+            {
+                l.edit = EditType.NonEditableInGame;
+            }
+            UniformedDraw(lavProps, uniformedLabelWidth, boolWidth);
+        }
+    }
+#endif
+
+    #endregion
 }
