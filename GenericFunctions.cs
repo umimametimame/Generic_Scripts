@@ -110,7 +110,15 @@ namespace AddClass
             return vec;
         }
 
-        public static float GetAngleByVec2(Vector3 start, Vector3 target)
+        public static float GetAngleByVec3(Vector3 start, Vector3 target)
+        {
+            float angle;
+            Vector3 dt = start - target;
+            angle = Mathf.Atan2(dt.y, dt.x) * Mathf.Rad2Deg;
+
+            return angle;
+        }
+        public static float GetAngleByVec2(Vector2 start, Vector2 target)
         {
             float angle;
             Vector3 dt = start - target;
@@ -119,6 +127,73 @@ namespace AddClass
             return angle;
         }
 
+        /// <summary>
+        /// Vector3で各角度を返す
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <returns></returns>
+        public static Vector3 Vector3AngleSet(Vector3 v1, Vector3 v2)
+        {
+            Vector3 angle;
+
+            Vector2 start;
+            Vector2 end;
+
+            // xを求める
+            start.x = v1.y;
+            start.y = v2.z;
+
+            end.x = v1.y;
+            end.y = v2.z;
+
+            angle.x = Vector3.Angle(start, end);
+
+            // yを求める
+            start.x = v1.x;
+            start.y = v2.z;
+
+            end.x = v1.x;
+            end.y = v2.z;
+
+            angle.y = Vector3.Angle(start, end);
+
+            // zを求める
+            start = v1;
+            end = v2;
+
+            angle.z = Vector3.Angle(start, end);
+
+            return angle;
+        }
+        public static Vector3 Vector3AngleSet(Transform t1, Transform t2)
+        {
+            Vector3 angle;
+
+
+            Vector3 v1;
+            Vector3 v2;
+
+            // xを求める
+            v1 = t1.up - t2.up;
+            v2 = t1.forward - t2.forward;
+
+            angle.x = Vector3.Angle(v1, v2);
+
+            // yを求める
+            v1 = t1.right - t2.right;
+            v2 = t1.forward - t2.forward;
+
+            angle.y = Vector3.Angle(v1, v2);
+
+            // zを求める
+            v1 = t1.up - t2.up;
+            v2 = t1.right - t2.right;
+
+            angle.z = Vector3.Angle(v1, v2);
+
+            return angle;
+        }
 
         public static Vector3 CameraToMouse()
         {
@@ -637,9 +712,10 @@ namespace AddClass
         [field: SerializeField] public GameObject moveObject { get; set; }
         [field: SerializeField] public float radius { get; private set; }
 
-        public void Initialize()
+        public void Initialize(GameObject center, GameObject moveObject)
         {
-            moveObject.transform.position = center.transform.position;
+            this.center = center;
+            this.moveObject = moveObject;
         }
         public void AdjustByCenter()
         {
@@ -656,46 +732,96 @@ namespace AddClass
         }
     }
 
-    [Serializable]
-    public class SmoothRotate
+    [Serializable] public class MoveCircleSurface
     {
+        [field: SerializeField] public Transform centerPos { get; set; }
+        [field: SerializeField] public Transform moveObject { get; set; }
+        [field: SerializeField] bool lookAtCenter { get; set; } // centerを向くか
+        [field: SerializeField] public Vector3 axis { get; set; }   // transform.rightなどで代入する
+
+        [SerializeField, NonEditable] private Vector3 norAxis;
+        [SerializeField, NonEditable] private Quaternion angleAxis;
         [SerializeField] private float speed;
-        [SerializeField] private GameObject targetObj;
-        public void Initialize(GameObject targetObj)
+        [field: SerializeField, NonEditable] public Vector3 angleFromCenter { get; private set; }
+        public void Initialize(GameObject moveObject)
         {
-            this.targetObj = targetObj;
+            this.moveObject = moveObject.transform;
         }
-        public void Update(Vector3 direction)
+        public void Initialize(Transform moveObject)
         {
-            if(direction == Vector3.zero) { return; }
-            Quaternion me = targetObj.transform.rotation;
-            Quaternion you = Quaternion.LookRotation(direction);
-            targetObj.transform.rotation = Quaternion.RotateTowards(me, you, speed * Time.deltaTime);
-        }
-    }
-
-    [Serializable]
-    public class EasingAnimator
-    {
-        [field: SerializeField, NonEditable] public float nowRatio { get; private set; }
-        [field: SerializeField, NonEditable] public float maxTime { get; private set; }
-        [SerializeField] private AnimationCurve curve;
-        public Animator animator { get; set; }
-        public void Initialize(float maxTime, Animator animator = null)
-        {
-            if (animator != null) { this.animator = animator; }
-            this.maxTime = maxTime;
-            nowRatio = 0.0f;
+            this.moveObject = moveObject;
         }
 
-        public void Reset()
+        /// <summary>
+        /// 引数は回転スピード
+        /// </summary>
+        /// <param name="speed"></param>
+        public void Update(float speed )
         {
-            nowRatio = 0.0f;
+            if (speed == 0.0f) { return; }
+            this.speed = speed;
+
+            norAxis = axis.normalized;
+            angleAxis = Quaternion.AngleAxis(360 * this.speed * Time.deltaTime, norAxis);
+
+            moveObject.position -= centerPos.position;
+            moveObject.position = angleAxis * moveObject.position;
+            moveObject.position += centerPos.position;
+
+            if(lookAtCenter == true)
+            {
+                moveObject.rotation = moveObject.rotation * angleAxis;
+            }
+
+            angleFromCenter = AddFunction.Vector3AngleSet(centerPos.position, moveObject.position);
         }
         public void Update()
         {
-            animator.speed *= curve.Evaluate(nowRatio);
-            nowRatio += 1 / maxTime * Time.deltaTime;
+            if (this.speed == 0.0f) { return; }
+
+            norAxis = axis.normalized;
+            angleAxis = Quaternion.AngleAxis(360 * this.speed * Time.deltaTime, norAxis);
+
+            moveObject.position -= centerPos.position;
+            moveObject.position = angleAxis * moveObject.position;
+            moveObject.position += centerPos.position;
+
+            if (lookAtCenter == true)
+            {
+                moveObject.rotation = moveObject.rotation * angleAxis;
+            }
+
+            angleFromCenter = AddFunction.Vector3AngleSet(centerPos.position, moveObject.position);
+        }
+
+
+    }
+
+    #region クラスの実行タイプ
+    /// <summary>
+    /// boolで判断し、trueの場合にメインの処理を行う
+    /// </summary>
+    [Serializable] public class Traffic
+    {
+        [field: SerializeField] public bool active { get; set; }
+        public Action activeAction { get; set; }
+        public Action nonActiveAction { get; set; }
+        public void Initialize()
+        {
+            active = false;
+            activeAction = null;
+            nonActiveAction = null;
+        }
+        public void Update()
+        {
+            if(active == true)
+            {
+                activeAction?.Invoke();
+            }
+            else
+            {
+                nonActiveAction?.Invoke();
+            }
         }
     }
 
@@ -796,16 +922,16 @@ namespace AddClass
     [Serializable]
     public class ThresholdRatio
     {
-        [SerializeField, NonEditable] private bool reaching;
-        [SerializeField, NonEditable] private bool beforeBool;
+        [field: SerializeField, NonEditable] public bool reaching { get; private set; }
+        [field: SerializeField, NonEditable] public bool beforeBool { get; private set; }
 
         [SerializeField] private Vector2 thresholdRange;
         [SerializeField, NonEditable] private float currentValue;
         [SerializeField, NonEditable] private Vector2 beforeRange;
-        public MomentAction withinRangeAction { get; set; } = new MomentAction();
-        public Action inRangeAction { get; set; }
-        public MomentAction exitRangeAction { get; set; } = new MomentAction();
-        public Action outOfRangeAction { get; set; }
+        public MomentAction withinRangeAction { get; set; } = new MomentAction();   // 範囲内に入る時に一度行われる
+        public Action inRangeAction { get; set; }                                   // 範囲内に入っている間に行われる
+        public MomentAction exitRangeAction { get; set; } = new MomentAction();     // 範囲外に出る時に一度行われる
+        public Action outOfRangeAction { get; set; }                                // 範囲外に出ている間に行われる
 
         public void Initialize(float min, float max)
         {
@@ -868,6 +994,108 @@ namespace AddClass
         }
 
     }
+    #endregion
+
+    [Serializable]
+    public class SmoothRotate
+    {
+        [SerializeField] private float speed;
+        [SerializeField] private GameObject targetObj;
+        public void Initialize(GameObject targetObj)
+        {
+            this.targetObj = targetObj;
+        }
+        public void Update(Vector3 direction)
+        {
+            if(direction == Vector3.zero) { return; }
+            Quaternion me = targetObj.transform.rotation;
+            Quaternion you = Quaternion.LookRotation(direction);
+            targetObj.transform.rotation = Quaternion.RotateTowards(me, you, speed * Time.deltaTime);
+        }
+    }
+
+    /// <summary>
+    /// AnimatorをEasingで制御できる
+    /// </summary>
+    [Serializable]
+    public class Easing
+    {
+        [SerializeField] private Traffic traffic;
+        [field: SerializeField, NonEditable] public float nowTime { get; private set; }
+        [field: SerializeField, NonEditable] public float evaluteValue { get; private set; }
+        [field: SerializeField] public AnimationCurve curve { get; set; }
+
+        public void Initialize()
+        {
+            Reset();
+
+            traffic.Initialize();
+            traffic.activeAction += Evalute;
+            traffic.nonActiveAction += Reset;
+        }
+        public void Update()
+        {
+            traffic.Update();
+        }
+
+        public void Reset()
+        {
+            nowTime = 0.0f;
+            evaluteValue *= curve.Evaluate(nowTime);
+        }
+        public void Evalute()
+        {
+            evaluteValue = curve.Evaluate(nowTime);
+            nowTime += Time.deltaTime;
+        }
+
+        public bool active
+        {
+            get { return traffic.active; }
+            set { traffic.active = value; }
+        }
+    }
+
+    /// <summary>
+    /// AnimatorをEasing割合で制御できる
+    /// </summary>
+    [Serializable]
+    public class EasingAnimator
+    {
+        [SerializeField] private Traffic traffic;
+        [field: SerializeField, NonEditable] public float nowRatio { get; private set; }
+        [field: SerializeField, NonEditable] public float maxTime { get; private set; }
+        [SerializeField] private AnimationCurve curve;
+        public Animator animator { get; set; }
+
+        public void Initialize(float maxTime, Animator animator = null)
+        {
+            if (animator != null) { this.animator = animator; }
+            this.maxTime = maxTime;
+            nowRatio = 0.0f;
+
+
+            traffic.Initialize();
+            traffic.activeAction += Evalute;
+            traffic.nonActiveAction += Reset;
+        }
+        public void Update()
+        {
+            traffic.Update();
+        }
+
+        public void Reset()
+        {
+            nowRatio = 0.0f;
+        }
+        public void Evalute()
+        {
+            animator.speed *= curve.Evaluate(nowRatio);
+            nowRatio += 1 / maxTime * Time.deltaTime;
+        }
+    }
+    
+
 
     /// <summary>
     /// Update内でも一度だけ実行できる
@@ -921,9 +1149,23 @@ namespace AddClass
         [field: SerializeField, NonEditable] public T entity { get; set; }
         [field: SerializeField, NonEditable] public T plan { get; set; }
 
+        /// <summary>
+        /// plan = entity
+        /// </summary>
         public void Assign()
         {
             plan = entity;
+        }
+
+        public void Default()
+        {
+            plan = default;
+            entity = default;
+        }
+        public void Reset(T t1)
+        {
+            plan = t1;
+            entity = t1;
         }
     }
 
