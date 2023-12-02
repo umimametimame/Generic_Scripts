@@ -9,9 +9,11 @@ using UnityEngine;
 /// </summary>
 public class FPSViewPoint : MonoBehaviour
 {
+    [SerializeField] private Camera cam;
+    [SerializeField] private Engine engine;
     [field: SerializeField, NonEditable] public EntityAndPlan<Vector2> inputViewPoint { get; set; }
-    [field: SerializeField, NonEditable] public EntityAndPlan<Vector3> viewPointPosPlan { get; set; }
-
+    [field: SerializeField, NonEditable] public Vector3 viewPointPosPlan { get; set; }
+    [SerializeField, NonEditable] private Vector3 beforePlan;
 
     [SerializeField] private Transform viewPointObject;
     [SerializeField] private MoveCircleSurface viewCircleHorizontal;
@@ -19,11 +21,12 @@ public class FPSViewPoint : MonoBehaviour
     [SerializeField] private ThresholdRatio verticalLimitter;
 
     [SerializeField] private CircleClamp norHorizontalCircle;
-    [SerializeField] private Transform norHorizontalCircleOffset;
+    [SerializeField] private Transform centerPos;
 
     private void Start()
     {
         Initialize();
+        Reset();
     }
     public void Initialize()
     {
@@ -31,40 +34,101 @@ public class FPSViewPoint : MonoBehaviour
         viewCircleVertical.Initialize(viewPointObject);
         verticalLimitter.Initialize();
 
-        norHorizontalCircle.Initialize(gameObject, viewPointObject.gameObject);
+        norHorizontalCircle.Initialize(centerPos.gameObject, viewPointObject.gameObject);
 
     }
-    
+
+    public void Reset()
+    {
+        cam.transform.eulerAngles = transform.eulerAngles;
+    }
+
     private void Update()
     {
-        viewPointPosPlan.Reset(viewPointObject.transform.position);
-        Vector3 newPos = Vector3.zero;
-        newPos.x = inputViewPoint.plan.x;
-        newPos.y = inputViewPoint.plan.y;
-
-        viewPointPosPlan.plan += newPos;
-
-        //viewPointObject.position = viewPointPosPlan.plan;
+        //DirrectionManager();
+        CameraContorller();
     }
     public void DirrectionManager()
     {
         // 向きを制御
+        inputViewPoint.Assign();
+
+        Vector3 newPlan = Vector3.zero;
+        //newPlan = Vector3.Scale(transform.forward, new Vector3(5, 5, 5));
+
+        if (inputViewPoint.entity == Vector2.zero)
+        {
+            viewPointPosPlan = Vector3.zero;
+            VerticalOffset(centerPos);
 
 
-        viewCircleHorizontal.Update(inputViewPoint.plan.x);
+            newPlan.x += beforePlan.x;
+            newPlan.z += beforePlan.z;
+            newPlan.x += viewCircleHorizontal.NewPosUpdate(inputViewPoint.plan.x).x;
+            newPlan.z += viewCircleHorizontal.NewPosUpdate(inputViewPoint.plan.x).z;
 
-        viewCircleVertical.axis = transform.right;
-        viewCircleVertical.Update(-viewPointPosPlan.plan.y);
+            viewPointPosPlan += newPlan;
+        }
+        else
+        {
+            viewPointPosPlan = Vector3.zero;
+            VerticalOffset(centerPos);
+
+            //newPlan.x = centerPos.position.x;
+            //newPlan.z = centerPos.position.z;
+
+            if(inputViewPoint.plan.x != 0.0f)
+            {
+                newPlan.x += viewCircleHorizontal.NewPosUpdate(inputViewPoint.plan.x).x;
+                newPlan.z += viewCircleHorizontal.NewPosUpdate(inputViewPoint.plan.x).z;
+
+            }
+
+            viewCircleVertical.axis = transform.right;
+            newPlan.y += viewCircleVertical.NewPosUpdate(-inputViewPoint.plan.y).y;
+            //viewCircleVertical.Update(-inputViewPoint.plan.y);
+
+            
+
+            viewPointPosPlan += newPlan;
+            beforePlan = viewPointPosPlan;
+        }
+
+
+
+        Debug.Log(viewPointPosPlan);
+
+        viewPointObject.position = viewPointPosPlan;
+        norHorizontalCircle.Limit();
+    }
+    public void CameraContorller()
+    {
+        // CameraのRotationを変更
+        Vector3 newCamEuler = cam.transform.eulerAngles;
+        newCamEuler.y += inputViewPoint.plan.x;
+        newCamEuler.x += -inputViewPoint.plan.y;
+        cam.transform.eulerAngles = newCamEuler;
 
         // Y軸の視点制限
-        verticalLimitter.Update(viewCircleVertical.angleFromCenter.z);
-        if (verticalLimitter.reaching == false) { viewCircleVertical.Update(inputViewPoint.plan.y); }  // 範囲外ならなかったことにする
+        if (cam.transform.eulerAngles.x != 0.0f)
+        {
+            verticalLimitter.Update(cam.transform.eulerAngles.x);
+            if (verticalLimitter.reaching == true)  // 視点の角度が範囲外なら
+            {
+                newCamEuler.x -= -inputViewPoint.plan.y;    // なかったことにする
+            }
+        }
+        cam.transform.eulerAngles = newCamEuler;
 
 
-        //norCircle.moveObject.transform.position = new Vector3(norCircle.moveObject.transform.position.x, gameObject.transform.transform.position.y, norCircle.moveObject.transform.position.z);
-        //norCircleOffset.Update(norCircle.moveObject);
 
-        norHorizontalCircle.Limit();
+        // PlayerのRotationを変更(Y軸のみ)
+        Vector3 newPlayerEuler = transform.eulerAngles;
+        newPlayerEuler.y = newCamEuler.y;
+        transform.eulerAngles = newPlayerEuler;
+
+        
+
     }
 
     /// <summary>
@@ -73,10 +137,10 @@ public class FPSViewPoint : MonoBehaviour
     /// <param name="t1"></param>
     public void VerticalOffset(Transform t1)
     {
-        Vector3 newViewPointPos = viewPointPosPlan.entity;
+        Vector3 newViewPointPos = Vector3.zero;
         newViewPointPos.y = t1.gameObject.transform.position.y;
 
-        viewPointPosPlan.plan += newViewPointPos;
+        viewPointPosPlan += newViewPointPos;
     }
 
     /// <summary>

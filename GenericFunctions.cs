@@ -200,6 +200,19 @@ namespace AddClass
             return new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y, 0.0f);
         }
 
+        /// <summary>
+        /// â°é≤xÅAâúçsyÇÃVector2Çï‘Ç∑
+        /// </summary>
+        /// <param name="cam"></param>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static Vector3 GetFPSMoveVec2(Camera cam, Vector2 input)
+        {
+            Vector3 cameraForward = new Vector3(cam.transform.forward.x, 0, cam.transform.forward.z).normalized;
+            Vector3 movePos = cameraForward * input.y + cam.transform.right * input.x;
+
+            return new Vector2(movePos.x, movePos.z);
+        }
         public static bool IsEven(int value)
         {
             if (value / 2 == 0)
@@ -635,12 +648,12 @@ namespace AddClass
         [field: SerializeField] public Action toEnd { get; set; }
         [field: SerializeField] public Action ending { get; set; }
 
-        public bool started { get; private set; }
+        [field: SerializeField, NonEditable] public bool oneShot { get; private set; }
 
         public void Initialize(bool started = false)
         {
             initialize?.Invoke();
-            this.started = started;
+            this.oneShot = started;
             state = ExistState.Disable;
         }
 
@@ -686,13 +699,16 @@ namespace AddClass
         /// </summary>
         public void StartOneShot()
         {
-            if (started == false)
+            if (oneShot == false)
             {
                 state = ExistState.Start;
-                started = true;
+                oneShot = true;
             }
         }
-
+        public void OneShotReset()
+        {
+            oneShot = false;
+        }
         public void Finish()
         {
             state = ExistState.Ending;
@@ -711,7 +727,7 @@ namespace AddClass
         [SerializeField] private GameObject center;
         [field: SerializeField] public GameObject moveObject { get; set; }
         [field: SerializeField] public float radius { get; private set; }
-
+        [field: SerializeField, NonEditable] public float currentDistance { get; private set; }
         public void Initialize(GameObject center, GameObject moveObject)
         {
             this.center = center;
@@ -723,10 +739,16 @@ namespace AddClass
         }
         public void Limit()
         {
-            if (Vector2.Distance(moveObject.transform.position, center.transform.position) > radius)
+            currentDistance = Vector2.Distance(moveObject.transform.position, center.transform.position);
+            
+            if (currentDistance > radius)
             {
+                Debug.Log("Limitting");
+
                 Vector3 nor = moveObject.transform.position - center.transform.position;
-                moveObject.transform.position = center.transform.position + nor.normalized * radius;
+                moveObject.transform.position = center.transform.position + nor.normalized * radius; 
+                currentDistance = Vector2.Distance(moveObject.transform.position, center.transform.position);
+
             }
 
         }
@@ -774,6 +796,30 @@ namespace AddClass
             }
 
             angleFromCenter = AddFunction.Vector3AngleSet(centerPos.position, moveObject.position);
+
+        }
+        public Vector3 NewPosUpdate(float speed)
+        {
+            if (speed == 0.0f) { return Vector3.zero; }
+            this.speed = speed;
+
+            norAxis = axis.normalized;
+            angleAxis = Quaternion.AngleAxis(360 * this.speed * Time.deltaTime, norAxis);
+
+            Vector3 newPos;
+
+            newPos = moveObject.position - centerPos.position;
+            newPos = angleAxis * newPos;
+            newPos += centerPos.position;
+
+            if (lookAtCenter == true)
+            {
+                moveObject.rotation = moveObject.rotation * angleAxis;
+            }
+
+            angleFromCenter = AddFunction.Vector3AngleSet(centerPos.position, moveObject.position);
+
+            return newPos;
         }
         public void Update()
         {
@@ -1092,6 +1138,12 @@ namespace AddClass
         {
             animator.speed *= curve.Evaluate(nowRatio);
             nowRatio += 1 / maxTime * Time.deltaTime;
+        }
+
+        public bool active
+        {
+            get { return traffic.active; }
+            set { traffic.active = value; }
         }
     }
     
