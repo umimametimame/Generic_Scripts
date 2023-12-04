@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.Assertions;
+using System.Collections;
+using Unity.VisualScripting;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -195,6 +197,51 @@ namespace AddClass
             return angle;
         }
 
+
+        public static Vector3 VecTFloatConvert(VecT<float> vec)
+        {
+            Vector3 newVec;
+            newVec.x = vec.x;
+            newVec.y = vec.y;
+            newVec.z = vec.z;
+
+            return newVec;
+        }
+        public static VecT<float> VecTFloatConvert(VecT<float> vec, Vector3 vec3)
+        {
+            vec.x = vec3.x;
+            vec.y = vec3.y;
+            vec.z = vec3.z;
+
+            return vec;
+        }
+
+        public static float IndexToVec3(int index, Vector3 vec3)
+        {
+            switch(index)
+            {
+                case 0: return vec3.x;
+                case 1: return vec3.y;
+                case 2: return vec3.z;
+            }
+
+            Debug.Log("Indexが違います");
+            return 0.0f;
+        }
+
+
+        public static T IndexToVec3<T>(int index, VecT<T> vec3)
+        {
+            switch (index)
+            {
+                case 0: return vec3.x;
+                case 1: return vec3.y;
+                case 2: return vec3.z;
+            }
+
+            Debug.Log("Indexが違います");
+            return default;
+        }
         public static Vector3 CameraToMouse()
         {
             return new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y, 0.0f);
@@ -885,8 +932,7 @@ namespace AddClass
         }
         [field: SerializeField, NonEditable] public bool active { get; private set; }
         [field: SerializeField] public float interval { get; private set; }
-        [field: SerializeField, NonEditable] public float value;
-        [field: SerializeField] public IncreseType valueIncreseType { get; set; }
+        [field: SerializeField, NonEditable] public VariedTime time { get; private set; }
         private bool autoReset;
         private bool reached;
         public Action reachAction { get; set; }
@@ -906,36 +952,22 @@ namespace AddClass
             this.autoReset = autoReset;
             if (start == true)
             {
-                value = this.interval;
+                time.Initialize(interval);
             }
             else
             {
-                value = 0.0f;
+                time.Initialize();
             }
 
-            active = (value >= interval) ? true : false;
+            active = (time.value >= interval) ? true : false;
             reached = false;
         }
 
         public void Update(float manualValue = 0.0f)
         {
-            switch (valueIncreseType)
-            {
-                case IncreseType.DeltaTime:
-                    value += Time.deltaTime;
+            time.Update(manualValue);
 
-                    break;
-
-                case IncreseType.Frame:
-                    value++;
-
-                    break;
-
-                case IncreseType.Manual:
-                    value = manualValue;
-                    break;
-            }
-            if (value >= interval)
+            if (time.value >= interval)
             {
                 if (reached == false)
                 {
@@ -954,11 +986,13 @@ namespace AddClass
             }
         }
 
-
+        /// <summary>
+        /// timeを0に戻す
+        /// </summary>
         public void Reset()
         {
             reached = false;
-            value = 0.0f;
+            time.Initialize();
         }
     }
 
@@ -1146,8 +1180,43 @@ namespace AddClass
             set { traffic.active = value; }
         }
     }
-    
 
+    [Serializable]
+    public class BulletLocusOperator
+    {
+        [field: SerializeField] private BulletLocus bulletLocus;
+        [field: SerializeField, NonEditable] public Vector3 posEva { get; private set; }
+        [field: SerializeField, NonEditable] public Vector3 rotEva { get; private set; }
+        [field: SerializeField, NonEditable] public VariedTime currentTime { get; private set; }
+
+        public void Initialize()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            currentTime.Initialize();
+
+            posEva = bulletLocus.addPos.Eva(currentTime.value);
+            rotEva = bulletLocus.addRot.Eva(currentTime.value);
+
+        }
+
+
+        /// <summary>
+        /// timeの増加<br/>
+        /// Evaluteを代入後に呼び出す
+        /// </summary>
+        public void Update()
+        {
+            posEva = bulletLocus.addPos.Eva(currentTime.value);
+            rotEva = bulletLocus.addRot.Eva(currentTime.value);
+
+            currentTime.Update();
+        }
+
+    }
 
     /// <summary>
     /// Update内でも一度だけ実行できる
@@ -1221,6 +1290,7 @@ namespace AddClass
         }
     }
 
+    
     [Serializable]
     public class HorizontalRect
     {
@@ -1276,6 +1346,125 @@ namespace AddClass
             }
         }
 
+    }
+
+    [Serializable] public class VariedTime
+    {
+        public enum IncreseType
+        {
+            DeltaTime,
+            Frame,
+            Manual,
+        }
+
+        [field: SerializeField, NonEditable] public float value { get; private set; }
+        [SerializeField] private IncreseType increseType;
+        [SerializeField] private bool reversalIncrese;
+        public void Initialize(float startTime = 0.0f)
+        {
+            value = startTime;
+        }
+        public void Update(float value = 0.0f)
+        {
+            switch(increseType)
+            {
+                case IncreseType.DeltaTime:
+                    if (reversalIncrese == true) { this.value -= Time.deltaTime; }
+                    else { this.value += Time.deltaTime; }
+                    break;
+
+                case IncreseType.Frame:
+                    if(reversalIncrese == true) { this.value++; }
+                    else { this.value--; }
+                    break;
+
+                case IncreseType.Manual:
+                    this.value = value;
+                    break;
+            }
+
+        }
+
+    }
+
+    [Serializable] public class Vector3T<T> : IEnumerable<T>
+    {
+        [field: SerializeField] public T x { get; set; }
+        [field: SerializeField] public T y { get; set; }
+        [field: SerializeField] public T z { get; set; }
+
+        private T[] elements;
+
+        public Vector3T(T x, T y, T z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+
+            elements = new T[3];
+
+            Assign();
+
+        }
+
+        public void Assign()
+        {
+            elements[0] = x;
+            elements[1] = y;
+            elements[2] = z;
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return new Vector3TEnumerator(elements);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public class Vector3TEnumerator : IEnumerator<T>
+        {
+            private T[] elements;
+            private int currentIndex = -1;
+            public Vector3TEnumerator(T[] elements)
+            {
+                this.elements = elements;
+            }
+
+            public bool MoveNext()
+            {
+                currentIndex++;
+                return currentIndex < elements.Length;
+            }
+
+            public void Reset()
+            {
+                currentIndex = -1;
+            }
+
+            public T Current
+            {
+                get
+                {
+                    try
+                    {
+                        return elements[currentIndex];
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+
+            }
+        }
     }
 
     public class ValueChecker<T> where T : struct
@@ -1439,6 +1628,278 @@ namespace AddClass
         }
 
     }
+
+    [Serializable] public class VecT<T>
+    {
+        public T x;
+        public T y;
+        public T z;
+
+        private List<T> list = new List<T>();
+
+        public VecT()
+        {
+            GetList();
+        }
+
+        private List<T> GetList()
+        {
+            list.Clear();
+            list = new List<T>() { x, y, z };
+
+            return list;
+        }
+
+        public void Assign()
+        {
+            x = list[0];
+            y = list[1];
+            z = list[2];
+        }
+        public void Assign(int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    x = list[0];
+                    break;
+                case 1:
+                    y = list[1];
+                    break;
+                case 2:
+                    z = list[2];
+                    break;
+            }
+        }
+
+        public void Assign(int index, T t)
+        {
+            switch (index)
+            {
+                case 0:
+                    x = t;
+                    break;
+                case 1:
+                    y = t;
+                    break;
+                case 2:
+                    z = t;
+                    break;
+            }
+        }
+
+        public T IndexToEntity(int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    return x;
+                case 1:
+                    return y;
+                case 2:
+                    return z;
+            }
+
+            Debug.Log("Indexが違います");
+            return default;
+        }
+
+        public int count
+        {
+            get {  return GetList().Count; }
+        }
+
+        public List<T> List
+        {
+            get { return GetList(); }
+        }
+    }
+    [Serializable] public class Vec3Bool
+    {
+        public bool x;
+        public bool y;
+        public bool z;
+    }
+    [Serializable] public class Range
+    {
+        public enum ThanType
+        {
+            ThanOrEqual,
+            Than,
+        }
+        public ThanType minThan;
+        public float min;
+        public ThanType maxThan;
+        public float max;
+        public bool minExcess;
+        public bool maxExcess;
+
+        public bool JudgeRange(float value)
+        {
+            switch (minThan)
+            {
+                case ThanType.ThanOrEqual:
+                    if(min > value) {
+                        minExcess = true;
+                        return false; 
+                    }
+                    break;
+                case ThanType.Than:
+                    if(min >= value)
+                    {
+                        minExcess = true;
+                        return false; 
+                    }
+                    break;
+            }
+            minExcess = false;
+
+
+            switch (maxThan) 
+            { 
+                case ThanType.ThanOrEqual:
+                    if(value > max) 
+                    { 
+                        maxExcess = true;
+                        return false; 
+                    }
+                    break;
+                case ThanType.Than:
+                    if(value >= max) 
+                    { 
+                        maxExcess = true;
+                        return false; 
+                    }
+                    break;
+            }
+            maxExcess = false;
+
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Rangeとそれを評価する値を代入する値を含む
+    /// </summary>
+    [Serializable] public class ValueInRange : Range
+    {
+        public bool inRange;
+        public float currentValue;
+        public void Update(float value = 0.0f)
+        {
+            if (value != 0.0f) { currentValue = value; }
+
+            inRange = JudgeRange(currentValue);
+        }
+    }
+
+    
+    [Serializable] public class PosRange
+    {
+        [field: SerializeField] public VecT<ValueInRange> valueInRange { get; private set; } = new VecT<ValueInRange>();
+        public Vector3 Update(Vector3 target)
+        {
+            VecT<float> newPos = new VecT<float>();
+            AddFunction.VecTFloatConvert(newPos, target);
+
+            for (int i = 0; i < valueInRange.count; ++i)
+            {
+                valueInRange.List[i].Update(AddFunction.IndexToVec3(i, target));
+                newPos.Assign(i, Mathf.Clamp(newPos.IndexToEntity(i), valueInRange.List[i].min, valueInRange.List[i].max));
+            }
+
+            Vector3 returnPos = AddFunction.VecTFloatConvert(newPos);
+
+            return returnPos;
+        }
+
+    }
+
+
+    [Serializable] public class Vec3Curve
+    {
+        public AnimationCurve xCurve;
+        public AnimationCurve yCurve;
+        public AnimationCurve zCurve;
+        private List<AnimationCurve> curves = new List<AnimationCurve>();
+        
+        public void Initialize()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+
+            curves.Clear();
+            curves.Add(xCurve);
+            curves.Add(yCurve);
+            curves.Add(zCurve);
+
+        }
+
+        public void ZeroFill()
+        {
+            for(int i = 0; i < curves.Count; ++i)
+            {
+                bool artificial = false;
+                if (curves[i].length != 0 && curves[i].length != 1)
+                {
+                    artificial = true;
+                }
+
+                if(artificial == false)
+                {
+                    for (int j = 0; j < curves[i].length; ++j)
+                    {
+
+                        curves[i].RemoveKey(j);
+                    }
+
+                    curves[i].AddKey(0.0f, 0.0f);
+                    curves[i].AddKey(1.0f, 0.0f);
+
+                    for (int j = 0; j < curves[i].length; ++j)
+                    {
+                        curves[i].MoveKey(j, new Keyframe(j, 0));
+                    }
+
+                    curves[i].postWrapMode = WrapMode.Loop;
+                    curves[i].preWrapMode = WrapMode.Loop;
+                }
+            }
+        }
+        public void Clear()
+        {
+            for (int i = 0; i < curves.Count; ++i)
+            {
+                for (int k = 0; k < 3; ++k)
+                {
+                    for (int j = 0; j < curves[i].length; ++j)
+                    {
+                        curves[i].MoveKey(j, new Keyframe(0, 0));
+                        curves[i].RemoveKey(0);
+                    }
+
+                }
+            }
+        }
+
+        /// <summary>
+        /// 現在時間
+        /// </summary>
+        public Vector3 Eva(float time)
+        {
+            Vector3 newEva;
+            newEva.x = xCurve.Evaluate(time);
+            newEva.y = yCurve.Evaluate(time);
+            newEva.z = zCurve.Evaluate(time);
+
+            return newEva;
+        }
+
+    }
+
     /// <summary>
     /// 図形のlocalScale.xまたはyを参照値に合わせて拡縮させる
     /// </summary>
@@ -1530,6 +1991,7 @@ namespace AddClass
         public float boolWidth = 15;
         public float uniformedLabelWidth;
         public float uniformedFieldWidth;
+        public float labelWidthAve;
         public float distance = 4.1f;       // PropertyDrawerの定数
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -1567,7 +2029,8 @@ namespace AddClass
 
         /// <summary>
         /// Updateの最初に行う<br/>
-        /// 引数は表示する要素数
+        /// 引数は表示する要素数<br/>
+        /// Labelの大きさ
         /// </summary>
         /// <param name="horizontalElements"></param>
         public void Uniform(int horizontalElements, float labelWidth = 30)
@@ -1575,6 +2038,12 @@ namespace AddClass
             uniformedLabelWidth = labelWidth;
             uniformedFieldWidth = pos.width / horizontalElements - uniformedLabelWidth - distance * 2;
 
+        }
+
+
+        public float UniformedRatio(float horizontalElements, float ratio)
+        {
+            return (pos.width / horizontalElements - labelWidthAve - distance * 2) * (ratio * 2);
         }
 
         public void UniformedDraw(List<LabelAndproperty> lavProps)
@@ -1809,21 +2278,13 @@ namespace AddClass
 
             entity.edit = EditType.NonEditable;
             List<LabelAndproperty> list = new List<LabelAndproperty>() { entity, max, autoRecoverValue };
-
+                      
+            
             Uniform(list.Count, 40);
             UniformedDraw(list);
         }
     }
-#endif
 
-    [Serializable] public class Vec3Bool
-    {
-        public bool x;
-        public bool y;
-        public bool z;
-    }
-
-#if UNITY_EDITOR
     [CustomPropertyDrawer(typeof(Vec3Bool))]
     public class Vec3BoolDrawer : MyPropertyDrawer 
     {
@@ -1842,6 +2303,24 @@ namespace AddClass
             UniformedDraw(lavProps, uniformedLabelWidth, boolWidth);
         }
     }
+
+    //[CustomPropertyDrawer(typeof(Vec3Curve))]
+    //public class Vec3CurveDrawer : MyPropertyDrawer
+    //{
+    //    LabelAndproperty xCurve = new LabelAndproperty(nameof(xCurve));
+    //    LabelAndproperty yCurve = new LabelAndproperty(nameof(yCurve));
+    //    LabelAndproperty zCurve = new LabelAndproperty(nameof(zCurve));
+    //    protected override void Update(Rect pos, SerializedProperty prop, GUIContent label)
+    //    {
+    //        List<LabelAndproperty> lavProps = new List<LabelAndproperty>() { xCurve, yCurve, zCurve };
+    //        Uniform(lavProps.Count, 10);
+    //        foreach(LabelAndproperty l in lavProps)
+    //        {
+    //            l.edit = EditType.NonEditableInGame;
+    //        }
+    //        UniformedDraw(lavProps);
+    //    }
+    //}
 #endif
 
     #endregion

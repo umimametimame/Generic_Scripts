@@ -27,7 +27,7 @@ namespace GenericChara
         public Engine engine { get; set; }
         [field: SerializeField, NonEditable] public bool alive { get; protected set; }  //  ê∂ë∂
         [SerializeField] private Interval respawnInterval;
-        [SerializeField] protected EntityAndPlan<Vector2> moveVelocity;
+        [SerializeField] protected EntityAndPlan<Vector3> moveVelocity;
         protected Action<UnderAttackType> underAttackAction;
         [SerializeField] private Interval spawnInvincible;
         [SerializeField] protected Interval invincible;
@@ -44,6 +44,9 @@ namespace GenericChara
             respawnInterval.reachAction += () => StateChange(CharaState.Spawn);
         }
 
+        /// <summary>
+        /// SpawnStateÇ…çsÇÌÇÍÇÈ
+        /// </summary>
         protected virtual void Spawn()
         {
 
@@ -51,6 +54,10 @@ namespace GenericChara
             spawnInvincible.Reset();
         }
 
+        /// <summary>
+        /// ParameterÇÃUpdate<br/>
+        /// StateãÏìÆèàóù
+        /// </summary>
         protected virtual void Update()
         {
             hp.Update();
@@ -85,11 +92,15 @@ namespace GenericChara
             lastAttacker = null;
         }
 
+        public Vector3 GetAssignedVelocity()
+        {
+            return moveVelocity.plan * assignSpeed;
+        }
+
         public void AddVelocityPlan()
         {
-            Vector3 assign = Vector3.zero;
-            assign.x = moveVelocity.plan.x * assignSpeed;
-            assign.z = moveVelocity.plan.y * assignSpeed;
+            Vector3 assign;
+            assign = GetAssignedVelocity();
             engine.velocityPlan += assign;
         }
 
