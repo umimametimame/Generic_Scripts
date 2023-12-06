@@ -1,12 +1,14 @@
 using AddClass;
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem.Users;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 namespace GenericChara
 {
+    
     public class Chara : MonoBehaviour
     {
         public enum CharaState
@@ -56,7 +58,8 @@ namespace GenericChara
 
         /// <summary>
         /// Parameter‚ÌUpdate<br/>
-        /// State‹ì“®ˆ—
+        /// State‹ì“®ˆ—<br/>
+        /// moveVelocity‚ÌƒŠƒZƒbƒg
         /// </summary>
         protected virtual void Update()
         {
@@ -64,6 +67,8 @@ namespace GenericChara
             speed.Update();
             pow.Update();
             spawnInvincible.Update();
+
+            moveVelocity.plan = Vector3.zero;
             switch (charaState)
             {
                 case CharaState.Spawn:
@@ -87,21 +92,21 @@ namespace GenericChara
             pow.Initialize();
         }
 
-        protected virtual void Reset()
+
+        public Vector3 GetAssignedSpeedVelocity(Vector3 value)
         {
-            lastAttacker = null;
+            return value * assignSpeed;
         }
 
-        public Vector3 GetAssignedVelocity()
+        public void AddAssignedMoveVelocity(Vector3 value)
         {
-            return moveVelocity.plan * assignSpeed;
+            moveVelocity.plan += GetAssignedSpeedVelocity(value);
         }
+
 
         public void AddVelocityPlan()
         {
-            Vector3 assign;
-            assign = GetAssignedVelocity();
-            engine.velocityPlan += assign;
+            engine.velocityPlan += moveVelocity.plan;
         }
 
         /// <summary>

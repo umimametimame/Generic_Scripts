@@ -216,9 +216,22 @@ namespace AddClass
             return vec;
         }
 
+        public static Vector3 IndexToDirrection(int index, Transform tra)
+        {
+            switch (index % 3)
+            {
+                case 0: return tra.right;
+                case 1: return tra.up;
+                case 2: return tra.forward;
+            }
+
+            Debug.Log("Indexが違います");
+            return Vector3.zero;
+        }
+
         public static float IndexToVec3(int index, Vector3 vec3)
         {
-            switch(index)
+            switch(index % 3)
             {
                 case 0: return vec3.x;
                 case 1: return vec3.y;
@@ -1181,42 +1194,7 @@ namespace AddClass
         }
     }
 
-    [Serializable]
-    public class BulletLocusOperator
-    {
-        [field: SerializeField] private BulletLocus bulletLocus;
-        [field: SerializeField, NonEditable] public Vector3 posEva { get; private set; }
-        [field: SerializeField, NonEditable] public Vector3 rotEva { get; private set; }
-        [field: SerializeField, NonEditable] public VariedTime currentTime { get; private set; }
-
-        public void Initialize()
-        {
-            Reset();
-        }
-
-        public void Reset()
-        {
-            currentTime.Initialize();
-
-            posEva = bulletLocus.addPos.Eva(currentTime.value);
-            rotEva = bulletLocus.addRot.Eva(currentTime.value);
-
-        }
-
-
-        /// <summary>
-        /// timeの増加<br/>
-        /// Evaluteを代入後に呼び出す
-        /// </summary>
-        public void Update()
-        {
-            posEva = bulletLocus.addPos.Eva(currentTime.value);
-            rotEva = bulletLocus.addRot.Eva(currentTime.value);
-
-            currentTime.Update();
-        }
-
-    }
+    
 
     /// <summary>
     /// Update内でも一度だけ実行できる
@@ -1704,9 +1682,9 @@ namespace AddClass
             return default;
         }
 
-        public int count
+        public static int count
         {
-            get {  return GetList().Count; }
+            get {  return 3; }
         }
 
         public List<T> List
@@ -1719,6 +1697,16 @@ namespace AddClass
         public bool x;
         public bool y;
         public bool z;
+
+        public VecT<bool> ConvertToVecT()
+        {
+            VecT<bool> returnVecT = new VecT<bool>();
+            returnVecT.x = x;
+            returnVecT.y = y;
+            returnVecT.z = z;
+
+            return returnVecT;
+        }
     }
     [Serializable] public class Range
     {
@@ -1796,19 +1784,55 @@ namespace AddClass
     
     [Serializable] public class PosRange
     {
+        [field: SerializeField] public Vec3Bool enableAxis { get; set; }
         [field: SerializeField] public VecT<ValueInRange> valueInRange { get; private set; } = new VecT<ValueInRange>();
-        public Vector3 Update(Vector3 target)
+        
+        /// <summary>
+        /// インスペクタのcenterは参照しません
+        /// </summary>
+        /// <param name="centerPos"></param>
+        /// <param name="targetPos"></param>
+        /// <returns></returns>
+        public Vector3 Update(Vector3 centerPos, Vector3 targetPos)
         {
-            VecT<float> newPos = new VecT<float>();
-            AddFunction.VecTFloatConvert(newPos, target);
+            VecT<float> vecTCenter = new VecT<float>();
+            VecT<float> vecTTarget = new VecT<float>();
 
-            for (int i = 0; i < valueInRange.count; ++i)
+            AddFunction.VecTFloatConvert(vecTCenter, centerPos);
+            AddFunction.VecTFloatConvert(vecTTarget, targetPos);
+
+            for (int i = 0; i < VecT<float>.count; ++i)
             {
-                valueInRange.List[i].Update(AddFunction.IndexToVec3(i, target));
-                newPos.Assign(i, Mathf.Clamp(newPos.IndexToEntity(i), valueInRange.List[i].min, valueInRange.List[i].max));
+                if (enableAxis.ConvertToVecT().List[i] == true)
+                {
+                    valueInRange.List[i].Update(AddFunction.IndexToVec3(i, vecTTarget));
+                    vecTTarget.Assign(i, Mathf.Clamp(vecTTarget.IndexToEntity(i), valueInRange.List[i].min + vecTCenter.List[i], valueInRange.List[i].max + vecTCenter.List[i]));
+                }
             }
 
-            Vector3 returnPos = AddFunction.VecTFloatConvert(newPos);
+            Vector3 returnPos = AddFunction.VecTFloatConvert(vecTTarget);
+
+            return returnPos;
+        }
+        public Vector3 Update(Transform centerTra, Transform targetTra)
+        {
+            VecT<float> vecTCenter = new VecT<float>();
+            VecT<float> vecTTarget = new VecT<float>();
+
+            AddFunction.VecTFloatConvert(vecTCenter, centerTra.position);
+            AddFunction.VecTFloatConvert(vecTTarget, targetTra.position);
+
+            for (int i = 0; i < VecT<float>.count; ++i)
+            {
+                if (enableAxis.ConvertToVecT().List[i] == true)
+                {
+
+                    valueInRange.List[i].Update(AddFunction.IndexToVec3(i, vecTTarget));
+                    vecTTarget.Assign(i, Mathf.Clamp(vecTTarget.IndexToEntity(i), valueInRange.List[i].min + vecTCenter.List[i], valueInRange.List[i].max + vecTCenter.List[i]));
+                }
+            }
+
+            Vector3 returnPos = AddFunction.VecTFloatConvert(vecTTarget);
 
             return returnPos;
         }
