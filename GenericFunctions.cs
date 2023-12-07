@@ -820,7 +820,7 @@ namespace AddClass
         [field: SerializeField] public Transform moveObject { get; set; }
         [field: SerializeField] bool lookAtCenter { get; set; } // center‚ðŒü‚­‚©
         [field: SerializeField] public Vector3 axis { get; set; }   // transform.right‚È‚Ç‚Å‘ã“ü‚·‚é
-
+        [SerializeField] private float distanceFromCenter;
         [SerializeField, NonEditable] private Vector3 norAxis;
         [SerializeField, NonEditable] private Quaternion angleAxis;
         [SerializeField] private float speed;
@@ -832,6 +832,11 @@ namespace AddClass
         public void Initialize(Transform moveObject)
         {
             this.moveObject = moveObject;
+        }
+
+        public void SetDistance(Vector3 axis)
+        {
+            moveObject.position = centerPos.position + (axis * distanceFromCenter);
         }
 
         /// <summary>
@@ -1266,6 +1271,10 @@ namespace AddClass
             plan = t1;
             entity = t1;
         }
+        public void PlanDefault()
+        {
+            plan = default;
+        }
     }
 
     
@@ -1365,85 +1374,7 @@ namespace AddClass
 
     }
 
-    [Serializable] public class Vector3T<T> : IEnumerable<T>
-    {
-        [field: SerializeField] public T x { get; set; }
-        [field: SerializeField] public T y { get; set; }
-        [field: SerializeField] public T z { get; set; }
-
-        private T[] elements;
-
-        public Vector3T(T x, T y, T z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-
-            elements = new T[3];
-
-            Assign();
-
-        }
-
-        public void Assign()
-        {
-            elements[0] = x;
-            elements[1] = y;
-            elements[2] = z;
-        }
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            return new Vector3TEnumerator(elements);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public class Vector3TEnumerator : IEnumerator<T>
-        {
-            private T[] elements;
-            private int currentIndex = -1;
-            public Vector3TEnumerator(T[] elements)
-            {
-                this.elements = elements;
-            }
-
-            public bool MoveNext()
-            {
-                currentIndex++;
-                return currentIndex < elements.Length;
-            }
-
-            public void Reset()
-            {
-                currentIndex = -1;
-            }
-
-            public T Current
-            {
-                get
-                {
-                    try
-                    {
-                        return elements[currentIndex];
-                    }
-                    catch (IndexOutOfRangeException)
-                    {
-                        throw new InvalidOperationException();
-                    }
-                }
-            }
-            object IEnumerator.Current => Current;
-
-            public void Dispose()
-            {
-
-            }
-        }
-    }
+    
 
     public class ValueChecker<T> where T : struct
     {
@@ -1839,6 +1770,29 @@ namespace AddClass
 
     }
 
+    [Serializable] public class Curve
+    {
+        [SerializeField] private AnimationCurve curve = new AnimationCurve();
+        [SerializeField] private VariedTime time = new VariedTime();
+        [field: SerializeField] public float currentValue { get; private set; }
+        public Curve()
+        {
+            time = new VariedTime();
+        }
+        public float Update()
+        {
+            currentValue = curve.Evaluate(time.value);
+
+            time.Update();
+
+            return currentValue;
+        }
+
+        public void Clear()
+        {
+            time.Initialize();
+        }
+    }
 
     [Serializable] public class Vec3Curve
     {
