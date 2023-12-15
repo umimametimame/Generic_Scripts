@@ -916,25 +916,39 @@ namespace AddClass
     [Serializable] public class Traffic
     {
         public bool active;
-        public Action activeAction { get; set; }
-        public Action nonActiveAction { get; set; }
+        public Action launchAction { get; set; }
+        public Action enableAction { get; set; }
+        public Action disableAction { get; set; }
+        public Action closeAction { get; set; }
         public void Initialize()
         {
             active = false;
-            activeAction = null;
-            nonActiveAction = null;
+            enableAction = null;
+            disableAction = null;
         }
         public void Update()
         {
             if(active == true)
             {
-                activeAction?.Invoke();
+                enableAction?.Invoke();
             }
             else
             {
-                nonActiveAction?.Invoke();
+                disableAction?.Invoke();
             }
         }
+
+        public void Launch()
+        {
+            active = true;
+            launchAction?.Invoke();
+        }
+        public void Close()
+        {
+            active = false;
+            closeAction?.Invoke();
+        }
+
     }
 
     /// <summary>
@@ -1135,8 +1149,8 @@ namespace AddClass
             Reset();
 
             traffic.Initialize();
-            traffic.activeAction += Evalute;
-            traffic.nonActiveAction += Reset;
+            traffic.enableAction += Evalute;
+            traffic.disableAction += Reset;
         }
         public void Update()
         {
@@ -1181,8 +1195,8 @@ namespace AddClass
 
 
             traffic.Initialize();
-            traffic.activeAction += Evalute;
-            traffic.nonActiveAction += Reset;
+            traffic.enableAction += Evalute;
+            traffic.disableAction += Reset;
         }
         public void Update()
         {
