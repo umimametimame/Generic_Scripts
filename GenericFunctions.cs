@@ -128,6 +128,17 @@ namespace AddClass
         {
             return Mathf.Repeat(angle - min, max - min) + min;
         }
+
+        public static Vector3 GetNormalizedAngles(Vector3 angles, float min, float max)
+        {
+            Vector3 retVec3;
+            retVec3.x = GetNormalizedAngle(angles.x, min, max);
+            retVec3.y = GetNormalizedAngle(angles.y, min, max);
+            retVec3.z = GetNormalizedAngle(angles.z, min, max);
+
+            return retVec3;
+        }
+
         /// <summary>
         /// Vector2Çäpìx(360ìx)Ç…ïœçX
         /// </summary>
@@ -389,7 +400,6 @@ namespace AddClass
                         select animationClip.length).FirstOrDefault();
             }
         }
-
         
         public static void SetAnchor(this RectTransform source, AnchorPresets allign, int offsetX = 0, int offsetY = 0)
         {
@@ -1131,6 +1141,12 @@ namespace AddClass
             Quaternion you = Quaternion.LookRotation(direction);
             targetObj.transform.rotation = Quaternion.RotateTowards(me, you, speed * Time.deltaTime);
         }
+        public void Update(Transform changeTra)
+        {
+            Quaternion me = changeTra.rotation;
+            Quaternion you = Quaternion.LookRotation(changeTra.position - targetObj.transform.position);
+            targetObj.transform.rotation = Quaternion.RotateTowards(me, you, speed * Time.deltaTime);
+        }
     }
 
     /// <summary>
@@ -1382,15 +1398,8 @@ namespace AddClass
 
     [Serializable] public class VariedTime
     {
-        public enum IncreseType
-        {
-            DeltaTime,
-            Frame,
-            Manual,
-        }
-
         [field: SerializeField, NonEditable] public float value { get; private set; }
-        [SerializeField] private IncreseType increseType;
+        [field: SerializeField] public IncreseType increseType { get; set; }
         [SerializeField] private bool reversalIncrese;
         public void Initialize(float startTime = 0.0f, IncreseType type = default)
         {
@@ -1422,7 +1431,7 @@ namespace AddClass
 
     
 
-    public class ValueChecker<T> where T : struct
+    [Serializable] public class ValueChecker<T> where T : struct
     {
         [SerializeField] private T value;
         [SerializeField] private T beforeValue;
@@ -1451,6 +1460,8 @@ namespace AddClass
             {
                 changedAction?.Invoke();
             }
+
+            beforeValue = value;
         }
     }
     /// <summary>
@@ -2591,7 +2602,7 @@ namespace AddClass
                 l.edit = EditType.None;
             }
 
-            min.labelRect.Width = max.labelRect.Width = 30f;
+            min.labelRect.Width = max.labelRect.Width = 25.0f;
 
             min.useRatioInRemainder = max.useRatioInRemainder = 0.5f;
 
@@ -2651,6 +2662,7 @@ namespace AddClass
 
     #endregion
 }
+
 public enum AnchorPresets
 {
     TopLeft,
@@ -2690,4 +2702,10 @@ public enum PivotPresets
     BottomLeft,
     BottomCenter,
     BottomRight,
+}
+public enum IncreseType
+{
+    DeltaTime,
+    Frame,
+    Manual,
 }
