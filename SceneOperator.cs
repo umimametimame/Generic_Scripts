@@ -11,7 +11,7 @@ public class SceneOperator : MonoBehaviour
     [SerializeField] private Instancer canvas;
     [SerializeField] private FadeInstancer fadeObj;
 
-    private void Awake()
+    protected virtual void Awake()
     {
 
         canvas.Initialize();

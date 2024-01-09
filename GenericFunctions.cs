@@ -401,7 +401,20 @@ namespace AddClass
                         select animationClip.length).FirstOrDefault();
             }
         }
-        
+        public static void TimeStop()
+        {
+            if (Time.timeScale == 1.0f || Time.timeScale == 0.0f)
+            {
+                Time.timeScale = 0;
+
+            }
+            else
+            {
+                Debug.Log("TimeScaleÇ™ïœçXÇ≥ÇÍÇƒÇ¢Ç‹Ç∑ÅB");
+            }
+        }
+
+
         public static void SetAnchor(this RectTransform source, AnchorPresets allign, int offsetX = 0, int offsetY = 0)
         {
             source.anchoredPosition = new Vector3(offsetX, offsetY, 0);
@@ -2695,36 +2708,6 @@ namespace AddClass
             DrawPropsList();
         }
     }
-
-    //[CustomPropertyDrawer(typeof(VecT<object>))]
-    //public class VecTDrawer : MyPropertyDrawer
-    //{
-    //    LabelAndproperty entity = new LabelAndproperty(nameof(entity));
-    //    LabelAndproperty plan  = new LabelAndproperty(nameof(plan));
-    //    protected override void Update(Rect pos, SerializedProperty prop, GUIContent label)
-    //    {
-    //        List<LabelAndproperty> list = new List<LabelAndproperty> { entity, plan };
-    //        entity.Draw();
-    //    }
-    //}
-
-    //[CustomPropertyDrawer(typeof(Vec3Curve))]
-    //public class Vec3CurveDrawer : MyPropertyDrawer
-    //{
-    //    LabelAndproperty xCurve = new LabelAndproperty(nameof(xCurve));
-    //    LabelAndproperty yCurve = new LabelAndproperty(nameof(yCurve));
-    //    LabelAndproperty zCurve = new LabelAndproperty(nameof(zCurve));
-    //    protected override void Update(Rect pos, SerializedProperty prop, GUIContent label)
-    //    {
-    //        List<LabelAndproperty> lavProps = new List<LabelAndproperty>() { xCurve, yCurve, zCurve };
-    //        Uniform(lavProps.Count, 10);
-    //        foreach(LabelAndproperty l in lavProps)
-    //        {
-    //            l.edit = EditType.NonEditableInGame;
-    //        }
-    //        UniformedDraw(lavProps);
-    //    }
-    //}
 #endif
 
     #endregion

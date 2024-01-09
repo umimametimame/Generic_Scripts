@@ -128,4 +128,16 @@ using System;
         }
     }
 
+    public bool instanced
+    {
+        get
+        {
+            if(state != DisplayState.NotDisplayYet) // èoåªçœÇ›Ç»ÇÁ
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
 }

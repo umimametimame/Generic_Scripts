@@ -32,6 +32,7 @@ namespace GenericChara
         [field: SerializeField, NonEditable] public bool alive { get; protected set; }  //  ê∂ë∂
         [SerializeField] private Interval respawnInterval;
         [SerializeField] protected EntityAndPlan<Vector3> moveVelocity;
+        [SerializeField] protected Quaternion rotatePlan;
         protected Action<UnderAttackType> underAttackAction;
         [SerializeField] private Interval spawnInvincible;
         [SerializeField] protected Interval invincible;
@@ -71,6 +72,7 @@ namespace GenericChara
             spawnInvincible.Update();
 
             moveVelocity.plan = Vector3.zero;
+            rotatePlan = Quaternion.identity;
             switch (charaState)
             {
                 case CharaState.Spawn:
@@ -118,7 +120,8 @@ namespace GenericChara
 
         public void AddVelocityPlan()
         {
-            engine.velocityPlan += moveVelocity.plan;
+            engine.velocityPlan = moveVelocity.plan;
+            engine.rotatePlan = rotatePlan;
         }
 
         /// <summary>

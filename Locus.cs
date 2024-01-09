@@ -172,7 +172,11 @@ public class Locus : ScriptableObject
     {
         get { return motionLocus.rotEva; }
     }
-    public Vector3 addEulerAngle
+    public Quaternion rotate
+    {
+        get { return Quaternion.Euler(motionLocus.rotEva); }
+    }
+    public Vector3 modelEulerAngle
     {
         get { return motionLocus.modelRotEva; }
     }
