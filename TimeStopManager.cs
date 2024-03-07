@@ -19,6 +19,7 @@ public class TimeStopManager : MonoBehaviour
 
         SceneManager.sceneLoaded += LoadOtherScene;
     }
+
     [field: SerializeField] public float beforeTimeScale { get; private set; }
     [field: SerializeField] public bool stopping { get; private set; }
     public void TimeStop(float beforeScale)

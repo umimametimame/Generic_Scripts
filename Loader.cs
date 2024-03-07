@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// Funcの登録またはFinishLoadを実行してLoadを完了させる
@@ -11,6 +12,7 @@ public class Loader : MonoBehaviour
     [SerializeField] private bool startLoad;
     [field: SerializeField] public bool finishLoad { get; private set; }
     public Func<bool> loadFunc { get; set; }    // ロード終了時にtrueを返す関数
+
     private void Start()
     {
         

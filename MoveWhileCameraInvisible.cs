@@ -6,13 +6,11 @@ public class MoveWhileCameraInvisible : MonoBehaviour
 {
     [SerializeField] private Vector3 moveVector;
     [SerializeField] private float speed;
-    [SerializeField] private bool finished;
-    private Loader loader;
+    [field: SerializeField] public bool finished { get; private set; }
 
     private void Start()
     {
         finished = false;
-        loader = GetComponent<Loader>();
     }
     private void Update()
     {
@@ -26,7 +24,8 @@ public class MoveWhileCameraInvisible : MonoBehaviour
     {
         finished = true;
         transform.position -= moveVector.normalized * speed;
-        loader.FinishLoad();
     }
+
+
 
 }
