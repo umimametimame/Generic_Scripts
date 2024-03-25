@@ -26,7 +26,7 @@ public class InputOperator : MonoBehaviour
         }
 
     }
-    public void Update()
+    protected virtual void Update()
     {
 
         foreach (var i in vInputs)
@@ -90,7 +90,7 @@ public class Inputting
 [Serializable] public class InputVecOrFloat<T> : Inputting where T : struct
 {
     [field: SerializeField, NonEditable] public EntityAndPlan<T> input { get; set; } = new EntityAndPlan<T>();
-    [field: SerializeField] public ValueInRange floatRange = new ValueInRange();
+    [field: SerializeField] public ValueInRange floatRange { get; private set; } = new ValueInRange();
     [SerializeField, NonEditable] private InputType thisType;
 
     public override void Initialize()
@@ -103,6 +103,7 @@ public class Inputting
         {
             thisType = InputType.Float;
         }
+
     }
 
     public override void Update()

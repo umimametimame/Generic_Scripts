@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MoveWhileCameraInvisible : MonoBehaviour
 {
-    [SerializeField] private Vector3 moveVector;
+    [SerializeField] private Vector3 normalizedMoveVector;
     [SerializeField] private float speed;
     [field: SerializeField] public bool finished { get; private set; }
 
@@ -16,14 +16,14 @@ public class MoveWhileCameraInvisible : MonoBehaviour
     {
         if (finished == false)
         {
-            transform.position += moveVector.normalized * speed;
+            transform.position += normalizedMoveVector.normalized * speed;
         }
     }
 
     private void OnBecameInvisible()
     {
         finished = true;
-        transform.position -= moveVector.normalized * speed;
+        transform.position -= normalizedMoveVector.normalized * speed;
     }
 
 
