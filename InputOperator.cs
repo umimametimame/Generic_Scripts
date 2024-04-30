@@ -35,11 +35,11 @@ public class InputOperator : MonoBehaviour
         }
         foreach (var i in fInputs)
         {
-            i.Update();
+            i.Update(); 
         }
     }
 
-    public void SetList()
+    public void SetInputsList()
     {
 
         TypeFinder t = gameObject.AddComponent<TypeFinder>();

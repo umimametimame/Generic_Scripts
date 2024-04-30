@@ -1844,6 +1844,7 @@ namespace AddClass
     /// </summary>
     [Serializable] public class ValueInRange
     {
+
         public enum ThanType
         {
             ThanOrEqual,
@@ -1852,7 +1853,7 @@ namespace AddClass
             Less,
         }
         public ThanType minThan;
-        public MinMax range;
+        public MinMax range = new MinMax();
         public ThanType maxThan;
         public bool minExcess;
         public bool maxExcess;
