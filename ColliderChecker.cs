@@ -7,29 +7,54 @@ using UnityEngine.Events;
 /// </summary>
 public class ColliderChecker : MonoBehaviour
 {
-    public enum OnColliderType
-    {
-        Enter,
-        Stay,
-        Exit,
-    }
-    [SerializeField] private OnColliderType onColliderType;
-    [field: SerializeField] public UnityEvent<Collider> colliderEvent;
+    [field: SerializeField] public Collider thisCollider;
+    [field: SerializeField] public UnityEvent<Collider> triggerEnterEvent;
+    [field: SerializeField] public UnityEvent<Collider> triggerStayEvent;
+    [field: SerializeField] public UnityEvent<Collider> triggerExitEvent;
+
+
+    /// <summary>
+    /// CollisionÇà¯êîÇ…Ç∑ÇÈèÍçáÅARigidbodyÇ™ColliderÇ∆ìØÇ∂èÍèäÇ…ïKóv
+    /// </summary>
+    [field: SerializeField] public UnityEvent<Collision> collisionEnterEvent;
+    [field: SerializeField] public UnityEvent<Collision> collisionStayEvent;
+    [field: SerializeField] public UnityEvent<Collision> collisionExitEvent;
     private void OnTriggerEnter(Collider other)
     {
-        if(onColliderType == OnColliderType.Enter) { colliderEvent.Invoke(other); }
+        if (thisCollider.isTrigger == false) { return; }
+        triggerEnterEvent.Invoke(other); 
         
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if(onColliderType == OnColliderType.Stay) { colliderEvent.Invoke(other); }
-        
+        if (thisCollider.isTrigger == false) { return; }
+        triggerStayEvent.Invoke(other);
     }
 
     private void OnTriggerExit(Collider other)
     {
 
-        if (onColliderType == OnColliderType.Exit) { colliderEvent.Invoke(other); }
+        if (thisCollider.isTrigger == false) { return; }
+        triggerExitEvent.Invoke(other);
+    }
+    private void OnCollisionEnter(Collision other)
+    {
+        if (thisCollider.isTrigger == true) { return; }
+        collisionEnterEvent.Invoke(other);
+    }
+
+    private void OnCollisionStay(Collision other)
+    {
+        if (thisCollider.isTrigger == true) { return; }
+        collisionStayEvent.Invoke(other);
+
+    }
+
+    private void OnCollisionExit(Collision other)
+    {
+
+        if (thisCollider.isTrigger == true) { return; }
+        collisionExitEvent.Invoke(other);
     }
 }

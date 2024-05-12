@@ -3,8 +3,7 @@ using UnityEngine;
 
 public class TPSViewPoint : MonoBehaviour
 {
-    [SerializeField] private Camera cam;
-    [SerializeField] private Transform camPos;
+    [field: SerializeField] public Camera cam { get; set; }
     [SerializeField] private Engine engine;
     [SerializeField] private float sensitivity;
     [field: SerializeField, NonEditable] public EntityAndPlan<Vector2> inputViewPoint { get; set; }
@@ -18,11 +17,11 @@ public class TPSViewPoint : MonoBehaviour
     private void Start()
     {
         Initialize();
+        vertical.AssignProfile();
         Reset();
     }
     public void Initialize()
     {
-        
     }
 
     public void Reset()
@@ -55,6 +54,22 @@ public class TPSViewPoint : MonoBehaviour
     public void InputZeroAssign()
     {
         inputViewPoint.PlanDefault();
+    }
+
+    /// <summary>
+    /// 引数の角度にsensitivityのスピードで回転<br/>
+    /// 通常はxとyのみの回転
+    /// </summary>
+    /// <param name="dirrection"></param>
+    public void ChangeSeeSawAngle(Vector3 dirrection)
+    {
+        Vector3 newAngle;
+        newAngle = seesaw.localEulerAngles;
+        newAngle.x += dirrection.x * sensitivity;
+        newAngle.y += dirrection.y * sensitivity;
+        newAngle.z += dirrection.z * sensitivity;
+
+        seesaw.localEulerAngles = newAngle;
     }
 
     /// <summary>

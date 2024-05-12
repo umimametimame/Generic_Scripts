@@ -68,6 +68,7 @@ using UnityEngine;
     }
     private void NonActiveAction()
     {
+        Clear();
         currentGravity.plan = Vector3.zero;
     }
 

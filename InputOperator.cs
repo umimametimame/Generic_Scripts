@@ -4,18 +4,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// MoveActionをイベントとして持つ
+/// </summary>
 public class InputOperator : MonoBehaviour
 {
     [field: SerializeField] public PlayerInput playerInput { get; private set; }
     [field: SerializeField] public List<InputVecOrFloat<Vector3>> vInputs = new List<InputVecOrFloat<Vector3>>();
     [field: SerializeField] public List<InputVecOrFloat<float>> fInputs = new List<InputVecOrFloat<float>>();
     [field: SerializeField, NonEditable] public InputVecOrFloat<Vector3> moveInput { get; private set; } = new InputVecOrFloat<Vector3>();
-    
+    [field: SerializeField, NonEditable] public InputVecOrFloat<Vector3> viewPointInput = new InputVecOrFloat<Vector3>();
+
     public void Initialize()
     {
         playerInput = GetComponent<PlayerInput>();
 
-
+        moveInput.Initialize();
         foreach(var i in vInputs)
         {
             i.Initialize();
@@ -29,6 +33,7 @@ public class InputOperator : MonoBehaviour
     protected virtual void Update()
     {
 
+        moveInput.Update();
         foreach (var i in vInputs)
         {
             i.Update();
@@ -54,6 +59,11 @@ public class InputOperator : MonoBehaviour
         get { return moveInput.input; }
     }
 
+    public float SumVector
+    {
+        get { return Mathf.Abs(moveInput.entity.x) + Mathf.Abs(moveInput.entity.y) + Mathf.Abs(moveInput.entity.z); }
+    }
+
     #region PlayerInputEvent
     public void OnMove(InputValue value)
     {
@@ -63,6 +73,19 @@ public class InputOperator : MonoBehaviour
 
         moveInput.entity = newVec;
 
+    }
+
+    /// <summary>
+    /// 自前のTPSViewPointではxとyが反転する
+    /// </summary>
+    /// <param name="value"></param>
+    public void OnMoveViewPoint(InputValue value)
+    {
+        Vector3 newVec = Vector3.zero;
+        newVec.x = -value.Get<Vector2>().y;
+        newVec.y = value.Get<Vector2>().x;
+
+        viewPointInput.entity = newVec;
     }
     #endregion
 
@@ -108,6 +131,8 @@ public class Inputting
 
     public override void Update()
     {
+        inputting = false;
+
         switch (thisType)
         {
             case InputType.Vector3:
@@ -136,8 +161,6 @@ public class Inputting
             default:
                 break;
         }
-
-        inputting = false;
     }
 
     public void Assign()

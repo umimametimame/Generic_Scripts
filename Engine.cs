@@ -16,6 +16,7 @@ public class Engine : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         PlanReset();
         gravityOperator.Initialize();
+        gravityActive = true;
         PlanReset();
     }
 
@@ -53,8 +54,6 @@ public class Engine : MonoBehaviour
 
     private void GravitySolution()
     {
-
-        gravityActive = true;
         gravityOperator.Update();
         velocityPlan += gravityOperator.currentGravity.plan;
     }

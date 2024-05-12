@@ -107,6 +107,11 @@ namespace GenericChara
             lastAttacker = null;
         }
 
+        /// <summary>
+        /// value‚Í•ûŒü
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public Vector3 GetAssignedSpeedVelocity(Vector3 value)
         {
             return value * assignSpeed;
@@ -117,7 +122,9 @@ namespace GenericChara
             moveVelocity.plan += GetAssignedSpeedVelocity(value);
         }
 
-
+        /// <summary>
+        /// Engine‘¤‚ÉŽ©“®‚Å“o˜^‚³‚ê‚é
+        /// </summary>
         public void AddVelocityPlan()
         {
             engine.velocityPlan = moveVelocity.plan;

@@ -8,7 +8,6 @@ public class AdulationTarget : MonoBehaviour
     private void OnEnable()
     {
         editorUpdate = gameObject.AddComponent<EditorUpdate>();
-        //Debug.Log("Add");
         
         editorUpdate.EnableAction(PosAdulation);
     }
@@ -53,8 +52,12 @@ public class AdulationTarget : MonoBehaviour
         
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
+        if(adulationRatio <= 0)
+        {
+            Debug.Log("’Ç]Š„‡‚ª0ˆÈ‰º‚Å‚·!");
+        }
         PosAdulation();
     }
 

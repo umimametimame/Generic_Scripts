@@ -11,6 +11,21 @@ public class SceneOperator : MonoBehaviour
     [SerializeField] private Instancer canvas;
     [SerializeField] private FadeInstancer fadeObj;
 
+    //private void Singleton()
+    //{
+    //    instance‚Í“¯ƒNƒ‰ƒX–¼‚ÅéŒ¾
+    //    if (instance == null)
+    //    {
+    //        instance = (SceneOperator_GameScene)FindObjectOfType(typeof(SceneOperator_GameScene));
+    //        DontDestroyOnLoad(gameObject); // ’Ç‰Á
+    //    }
+    //    else
+    //    {
+    //        Destroy(gameObject);
+
+    //    }
+    //}
+
     protected virtual void Awake()
     {
 

@@ -15,20 +15,6 @@ using UnityEditor;
 namespace AddClass
 {
 
-    public class GenericFunctions : MonoBehaviour
-    {
-        // Start is called before the first frame update
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-    }
 
     public class SingletonDontDestroy<T> : MonoBehaviour where T : MonoBehaviour
     {
@@ -173,6 +159,11 @@ namespace AddClass
             angle = Mathf.Atan2(dt.y, dt.x) * Mathf.Rad2Deg;
 
             return angle;
+        }
+
+        public static float GetSumVector(Vector3 vec3)
+        {
+            return (Mathf.Abs(vec3.x) + Mathf.Abs(vec3.y) + Mathf.Abs(vec3.z));
         }
 
         /// <summary>
@@ -678,6 +669,13 @@ namespace AddClass
     public class TypeFinder : MonoBehaviour
     {
         [field: SerializeField] public FieldInfo[] fields { get; private set; }
+
+        /// <summary>
+        /// à¯êîÇ…ó~ÇµÇ¢å^Çì¸ÇÍÇΩå„ÅAGetType()Çé¿çsÇ∑ÇÈ
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public List<T> GetAndInList<T>(Type type)
         {
             fields = type.GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
