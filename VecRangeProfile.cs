@@ -24,7 +24,7 @@ public class VecRangeProfile : ScriptableObject
 {
     [field: SerializeField] public VecRangeProfile profile { get; private set; }
     [field: SerializeField] public Vec3Bool enableAxis { get; set; }
-    [field: SerializeField] public VecT<ValueInRange> valueInRange { get; private set; } = new VecT<AddClass.ValueInRange>();
+    [field: SerializeField] public VecT<ValueInRange> valueInRange { get; private set; } = new VecT<ValueInRange>();
 
     public void AssignProfile(VecRangeProfile assignProfile = null)
     {

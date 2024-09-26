@@ -69,11 +69,6 @@ using GenericChara;
         get { return motion.exist; }
         set { motion.exist = value; }
     }
-    public Action initializeAction
-    {
-        get { return exist.initialize; }
-        set { exist.initialize = value; }
-    }
     public Action startAction
     {
         get { return exist.start; }
@@ -134,7 +129,6 @@ using GenericChara;
 {
     public Action cutIn { get; set; }
     [SerializeField, NonEditable] private float motionTime;
-    [SerializeField] private float adjustMotionTime;
     [field: SerializeField] public Interval interval { get; set; }
     [field: SerializeField] public ThresholdRatio motionThreshold { get; set; }
     [field: SerializeField] public Exist exist { get; set; } = new Exist();
@@ -142,7 +136,6 @@ using GenericChara;
     public void Initialize(Animator animator, string clipName)
     {
         motionTime = AddFunction.GetAnimationClipLength(animator, clipName);
-        motionTime += adjustMotionTime;
 
 
         exist.start += () => easAnim.Initialize(motionTime, animator);
@@ -155,7 +148,7 @@ using GenericChara;
         exist.enable += () => interval.Update();
         exist.enable += () => motionThreshold.Update(easAnim.nowRatio);
 
-        exist.toEnd += Reset;
+        exist.finish += Reset;
 
         interval.activeAction += exist.Finish;
         interval.activeAction += exist.Reset;
@@ -199,11 +192,6 @@ using GenericChara;
     }
 
     #region Existプロパティ
-    public Action initializeAction
-    {
-        get { return exist.initialize; }
-        set { exist.initialize = value; }
-    }
     public Action startAction
     {
         get { return exist.start; }

@@ -110,7 +110,7 @@ public class FPSViewPoint : MonoBehaviour
         if (cam.transform.eulerAngles.x != 0.0f)
         {
             verticalLimitter.Update(cam.transform.eulerAngles.x);
-            if (verticalLimitter.reaching == true)  // 視点の角度が範囲外なら
+            if (verticalLimitter.isReaching == true)  // 視点の角度が範囲外なら
             {
                 newCamEuler.x -= -inputViewPoint.plan.y * sensitivity;    // なかったことにする
             }

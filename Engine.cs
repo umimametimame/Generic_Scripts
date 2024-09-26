@@ -14,7 +14,6 @@ public class Engine : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        PlanReset();
         gravityOperator.Initialize();
         gravityActive = true;
         PlanReset();
@@ -42,7 +41,6 @@ public class Engine : MonoBehaviour
     /// </summary>
     private Vector3 VelocitySolution()
     {
-
         velocityPlanAction?.Invoke();
         GravitySolution();
         rb.rotation = rotatePlan;

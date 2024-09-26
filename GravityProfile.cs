@@ -45,7 +45,7 @@ using UnityEngine;
     public void Update()
     {
         if (gravityProfile == null) {
-            Debug.Log("Gravity");
+            //Debug.Log("Gravity");
             return; }
         currentGravity.entity = Eva(time.value);
         traffic.Update();

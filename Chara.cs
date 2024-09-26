@@ -71,8 +71,6 @@ namespace GenericChara
             pow.Update();
             spawnInvincible.Update();
 
-            moveVelocity.plan = Vector3.zero;
-            rotatePlan = Quaternion.identity;
             switch (charaState)
             {
                 case CharaState.Spawn:
@@ -100,6 +98,8 @@ namespace GenericChara
             hp.Initialize();
             speed.Initialize();
             pow.Initialize();
+            moveVelocity.plan = Vector3.zero;
+            rotatePlan = Quaternion.identity;
         }
 
         protected virtual void Reset()
@@ -129,6 +129,8 @@ namespace GenericChara
         {
             engine.velocityPlan = moveVelocity.plan;
             engine.rotatePlan = rotatePlan;
+            moveVelocity.plan = Vector3.zero;
+            rotatePlan = Quaternion.identity;
         }
 
         /// <summary>
