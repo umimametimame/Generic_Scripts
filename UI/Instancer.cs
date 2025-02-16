@@ -76,12 +76,14 @@ using System;
         if (instanceSound != null) { FrontCanvas.instance.source.PlayOneShot(instanceSound); }
         clones.Add(GameObject.Instantiate(obj, parent.transform));
     }
-    public virtual void Instance(Transform instancePos)
+    public virtual GameObject Instance(Transform instancePos)
     {
         if (instanceSound != null) { FrontCanvas.instance.source.PlayOneShot(instanceSound); }
         GameObject clone =  GameObject.Instantiate(obj);
         clone.transform.position = instancePos.position;
         clones.Add(clone);
+
+        return clone;
     }
 
 

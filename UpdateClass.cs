@@ -563,7 +563,7 @@ public class Interval
 /// îÕàÕñàÇ…ActionÇé¿çsÇ∑ÇÈ
 /// </summary>
 [Serializable]
-public class ThresholdRatio
+public class Range
 {
     [field: SerializeField, NonEditable] public bool isReaching { get; private set; }
     private bool beforeBool;
@@ -1359,5 +1359,43 @@ public class AnimatorParameter
 
         // Condition í«â¡ÇÕÇªÇÃÇ‹Ç‹Ç≈ OK
         transition.AddCondition(AnimatorConditionMode.Equals, 1, "ParameterId");
+    }
+}
+
+
+
+[Serializable]
+public class TextParameter
+{
+    public TextMeshProUGUI text;
+    public string firstHalfText;
+    public string secondHalfText;
+    public string variableCenterText;
+
+    [SerializeField] private ValueChecker<int> valueChecker;
+    public void Initialize(int _startValue)
+    {
+        valueChecker = new ValueChecker<int>();
+        valueChecker.Initialize(_startValue);
+        valueChecker.changedAction += TextUpdate;
+
+        TextUpdate();
+    }
+
+    public void Update(int _numberOfVariable)
+    {
+        valueChecker.Update(_numberOfVariable);
+    }
+
+    public void TextUpdate()
+    {
+
+        string incrementalVariableText = "";
+        for (int i = 0; i < valueChecker.value; i++)
+        {
+            incrementalVariableText += variableCenterText;
+        }
+
+        text.text = firstHalfText + incrementalVariableText + secondHalfText;
     }
 }

@@ -8,6 +8,12 @@ using UnityEngine;
 public class RigorMotionStateProfile : ScriptableObject
 {
     [field: SerializeField] public GeneralMotion state { get; private set; }
+    /// <summary>
+    /// ‚±‚Ìƒ‚[ƒVƒ‡ƒ“‚ª‚Ç‚¤‚â‚Á‚ÄŠ„‚è‚Ş‚©
+    /// </summary>
+    [field: SerializeField] public CutInType cutInType { get; private set; }
+
     [field: SerializeField] public List<TransitionalMotionThreshold> transitionalPeriod { get; set; }
+    [field: SerializeField] public List<Range> rangeBool { get; set; }
     [field: SerializeField] public float motionTime { get; set; }
 }

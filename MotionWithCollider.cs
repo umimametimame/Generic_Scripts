@@ -93,7 +93,7 @@ using GenericChara;
         get { return motion.interval; }
     }
 
-    public ThresholdRatio motionThreshold
+    public Range motionThreshold
     {
         get { return motion.motionThreshold; }
     }
@@ -130,7 +130,7 @@ using GenericChara;
     public Action cutIn { get; set; }
     [SerializeField, NonEditable] private float motionTime;
     [field: SerializeField] public Interval interval { get; set; }
-    [field: SerializeField] public ThresholdRatio motionThreshold { get; set; }
+    [field: SerializeField] public Range motionThreshold { get; set; }
     [field: SerializeField] public Exist exist { get; set; } = new Exist();
     [field: SerializeField] public EasingAnimator easAnim { get; private set; } = new EasingAnimator();
     public void Initialize(Animator animator, string clipName)

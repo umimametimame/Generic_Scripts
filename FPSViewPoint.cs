@@ -19,7 +19,7 @@ public class FPSViewPoint : MonoBehaviour
     [SerializeField] private Transform viewPointObject;
     [SerializeField] private MoveCircleSurface viewCircleHorizontal;
     [SerializeField] private MoveCircleSurface viewCircleVertical;
-    [SerializeField] private ThresholdRatio verticalLimitter;
+    [SerializeField] private Range verticalLimitter;
 
     [SerializeField] private CircleClamp norHorizontalCircle;
     [SerializeField] private Transform centerPos;

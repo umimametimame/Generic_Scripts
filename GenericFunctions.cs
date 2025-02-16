@@ -749,6 +749,58 @@ namespace AddClass
         }
     }
 
+    [Serializable]
+    public class RatioCurve
+    {
+        [SerializeField] private AnimationCurve curve;
+        [SerializeField] private float multiplyValue;
+        [field: SerializeField] public CurveRatioProfile profile { get; private set; }
+
+        public void AssignProfile()
+        {
+            if (profile != null)
+            {
+                curve = profile.curve;
+                multiplyValue = profile.multiplyValue;
+            }
+        }
+
+        /// <summary>
+        /// multiplyÇèÊéZÇµÇΩílÇï‘Ç∑
+        /// </summary>
+        /// <param name="_ratio">äÑçá</param>
+        /// <returns></returns>
+        public float Evalute(float _ratio)
+        {
+            return Curve.Evaluate(_ratio) * MultiplyValue;
+        }
+
+        public AnimationCurve Curve
+        {
+            get
+            {
+                if(profile == null)
+                {
+                    return curve;
+                }
+
+                return profile.curve;
+            }
+        }
+
+        public float MultiplyValue
+        {
+            get
+            {
+                if(profile == null)
+                {
+                    return multiplyValue;
+                }
+
+                return profile.multiplyValue;
+            }
+        }
+    }
 
 
 
@@ -1239,7 +1291,7 @@ namespace AddClass
         /// <returns></returns>
         public bool CostJudge(float cost)
         {
-            if (entity - cost > 0.0f)
+            if (entity >= cost)
             {
                 return true;
             }

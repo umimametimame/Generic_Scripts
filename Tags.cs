@@ -13,6 +13,7 @@ public static class Tags
     public static string Body = nameof(Body);
     public static string Chara = nameof(Chara);
     public static string Bullet = nameof(Bullet);
+    public static string MainCamera = nameof(MainCamera);
 
 }
 

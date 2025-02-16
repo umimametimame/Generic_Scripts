@@ -26,7 +26,7 @@ namespace GenericChara
         protected Action reSpawnAction;
         [field: SerializeField] public Parameter hp;
         [field: SerializeField] public Parameter speed;
-        protected float assignSpeed;
+        public float assignSpeed { get; protected set; }
         [field: SerializeField] public Parameter pow;
         public Engine engine { get; set; }
         [field: SerializeField, NonEditable] public bool alive { get; protected set; }  //  ê∂ë∂
@@ -118,6 +118,10 @@ namespace GenericChara
         }
 
         public void AddAssignedMoveVelocity(Vector3 value)
+        {
+            moveVelocity.plan += GetAssignedSpeedVelocity(value);
+        }
+        public void AddMoveVelocity(Vector3 value)
         {
             moveVelocity.plan += GetAssignedSpeedVelocity(value);
         }

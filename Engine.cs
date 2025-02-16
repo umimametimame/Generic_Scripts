@@ -43,7 +43,7 @@ public class Engine : MonoBehaviour
     {
         velocityPlanAction?.Invoke();
         GravitySolution();
-        rb.rotation = rotatePlan;
+        //rb.rotation = rotatePlan;
         rb.velocity = velocityPlan;
 
         return transform.position;
