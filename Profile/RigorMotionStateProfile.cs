@@ -14,6 +14,7 @@ public class RigorMotionStateProfile : ScriptableObject
     [field: SerializeField] public CutInType cutInType { get; private set; }
 
     [field: SerializeField] public List<TransitionalMotionThreshold> transitionalPeriod { get; set; }
-    [field: SerializeField] public List<Range> rangeBool { get; set; }
-    [field: SerializeField] public float motionTime { get; set; }
+    [field: SerializeField] public List<MinMax> rangeBool { get; private set; }
+    [field: SerializeField] public List<Instancer> effectInstancers { get; private set; }
+    [field: SerializeField] public float motionTime { get; private set; }
 }

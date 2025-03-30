@@ -34,9 +34,7 @@ namespace GenericChara
         [SerializeField] protected EntityAndPlan<Vector3> moveVelocity;
         [SerializeField] protected Quaternion rotatePlan;
         protected Action<UnderAttackType> underAttackAction;
-        [SerializeField] private Interval spawnInvincible;
-        [SerializeField] protected Interval invincible;
-        [field: SerializeField] public Chara lastAttacker { get; private set; }
+        [field: SerializeField] public Chara lastAttacker { get; protected set; }
         protected virtual void Start()
         {
             Initialize();
@@ -56,7 +54,6 @@ namespace GenericChara
         {
 
             respawnInterval.Initialize(false);
-            spawnInvincible.Reset();
         }
 
         /// <summary>
@@ -69,7 +66,6 @@ namespace GenericChara
             hp.Update();
             speed.Update();
             pow.Update();
-            spawnInvincible.Update();
 
             switch (charaState)
             {
@@ -88,7 +84,6 @@ namespace GenericChara
                 case CharaState.ReSpawn:
                     reSpawnAction?.Invoke();
                     respawnInterval.Initialize(false);
-                    spawnInvincible.Reset();
                     StateChange(CharaState.Alive);
                     break;
             }
@@ -145,8 +140,6 @@ namespace GenericChara
         public bool UnderAttack(float damage, UnderAttackType type = UnderAttackType.None, Chara attacker = null)
         {
             if (alive == false) { return false; }
-            else if (spawnInvincible.active == false) { return false; }
-            else if (invincible.active == false) { return false; }
 
             hp.entity -= damage;
 

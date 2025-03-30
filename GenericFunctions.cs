@@ -707,6 +707,13 @@ namespace AddClass
         /// <typeparam name="T"></typeparam>
         /// <param name="type"></param>
         /// <returns></returns>
+
+        // —á
+        // TypeFinder t = gameObject.AddComponent<TypeFinder>();
+        // vInputs = t.GetAndInList<InputVecOrFloat<Vector3>>(GetType());
+        // fInputs = t.GetAndInList<InputVecOrFloat<float>>(GetType());
+        // Destroy(t);
+
         public List<T> GetAndInList<T>(Type type)
         {
             fields = type.GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
@@ -1289,7 +1296,7 @@ namespace AddClass
         /// </summary>
         /// <param name="cost"></param>
         /// <returns></returns>
-        public bool CostJudge(float cost)
+        public bool CostJudge(float cost = 1)
         {
             if (entity >= cost)
             {

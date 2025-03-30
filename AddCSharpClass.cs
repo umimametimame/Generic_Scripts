@@ -276,6 +276,12 @@ public class MinMax
         this.min = min;
         this.max = max;
     }
+    public void Initialize(MinMax _minmax)
+    {
+        this.min = _minmax.min;
+        this.max = _minmax.max;
+
+    }
     public float min;
     public float max;
 

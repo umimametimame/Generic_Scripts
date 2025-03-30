@@ -17,7 +17,7 @@ using System;
     [field: SerializeField] public GameObject obj { get; set; }
     [field: SerializeField, NonEditable] public List<GameObject> clones { get; set; } = new List<GameObject>();
     [field: SerializeField, NonEditable] public DisplayState state { get; private set;}
-    [SerializeField] private AudioClip instanceSound;
+    [SerializeField] private List<AudioClip> randomInstanceSound;
     [SerializeField] private GameObject parent;
 
 
@@ -68,22 +68,43 @@ using System;
     }
     public virtual void Instance()
     {
-        if (instanceSound != null) { FrontCanvas.instance.source.PlayOneShot(instanceSound); }
-        clones.Add(GameObject.Instantiate(obj));
+        if (randomInstanceSound.Count > 0)
+        { 
+            FrontCanvas.instance.source.PlayOneShot(randomSound); 
+        }
+        if(obj != null)
+        {
+            clones.Add(GameObject.Instantiate(obj));
+        }
     }
     public virtual void Instance(GameObject parent)
     {
-        if (instanceSound != null) { FrontCanvas.instance.source.PlayOneShot(instanceSound); }
-        clones.Add(GameObject.Instantiate(obj, parent.transform));
+        if (randomInstanceSound.Count > 0)
+        { 
+            FrontCanvas.instance.source.PlayOneShot(randomSound); 
+        }
+        if (obj != null)
+        {
+            clones.Add(GameObject.Instantiate(obj, parent.transform));
+        }
+
     }
     public virtual GameObject Instance(Transform instancePos)
     {
-        if (instanceSound != null) { FrontCanvas.instance.source.PlayOneShot(instanceSound); }
-        GameObject clone =  GameObject.Instantiate(obj);
-        clone.transform.position = instancePos.position;
-        clones.Add(clone);
+        if (randomInstanceSound.Count > 0) 
+        { 
+            FrontCanvas.instance.source.PlayOneShot(randomSound);
+        }
+        if (obj != null)
+        {
+            GameObject clone = GameObject.Instantiate(obj);
+            clone.transform.position = instancePos.position;
+            clones.Add(clone);
 
-        return clone;
+            return clone;
+        }
+
+        return null;
     }
 
 
@@ -141,5 +162,12 @@ using System;
             return false;
         }
     }
-
+    public AudioClip randomSound
+    {
+        get
+        {
+            int _random = UnityEngine.Random.Range(0, randomInstanceSound.Count - 1);
+            return randomInstanceSound[_random];
+        }
+    }
 }

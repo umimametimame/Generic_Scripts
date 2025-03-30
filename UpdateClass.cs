@@ -29,7 +29,7 @@ public class ValueInRange
     public bool inRange;
     public float currentValue;
 
-    public bool JudgeRange(float value)
+    public bool IsInRange(float value)
     {
         minExcess = false;
         switch (minThan)
@@ -104,7 +104,7 @@ public class ValueInRange
     {
         if (value != 0.0f) { currentValue = value; }
 
-        inRange = JudgeRange(currentValue);
+        inRange = IsInRange(currentValue);
     }
 
     public float min
@@ -570,7 +570,6 @@ public class Range
 
     [SerializeField] private MinMax thresholdRange = new MinMax();
     [SerializeField, NonEditable] private float currentValue;
-    [SerializeField, NonEditable] private MinMax beforeRange = new MinMax();
     public MomentAction withinRangeAction { get; set; } = new MomentAction();   // 範囲内に入る時に一度行われる
     public Action inRangeAction { get; set; }                                   // 範囲内に入っている間に行われる
     public MomentAction exitRangeAction { get; set; } = new MomentAction();     // 範囲外に出る時に一度行われる
@@ -583,14 +582,16 @@ public class Range
     }
     public void Initialize(MinMax range = default)
     {
-        if (range != default) { thresholdRange = range; }
+        if (range != default) 
+        { 
+            thresholdRange = range;
+        }
         Reset();
     }
 
     public void Reset()
     {
         beforeBool = false;
-        beforeRange.Clear();
         withinRangeAction.Initialize();
         exitRangeAction.Initialize();
     }
@@ -639,7 +640,6 @@ public class Range
         }
 
         beforeBool = isReaching;
-        beforeRange = thresholdRange;
     }
 
     public bool IsReaching
@@ -792,6 +792,11 @@ public class MomentAction
             action?.Invoke();
             activated = true;
         }
+    }
+    
+    public void Add(Action _action)
+    {
+        action += _action;
     }
 }
 

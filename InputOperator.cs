@@ -152,7 +152,7 @@ public class Inputting
                     }
                     else
                     {
-                        inputting = floatRange.JudgeRange((float)(object)input.entity);
+                        inputting = floatRange.IsInRange((float)(object)input.entity);
                     }
                     return;
                 }
