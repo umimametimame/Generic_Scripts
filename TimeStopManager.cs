@@ -1,4 +1,4 @@
-using AddClass;
+using AddUnityClass;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +12,7 @@ public class TimeStopManager : MonoBehaviour
     {
         if (instance == null)
         {
-            instance = (TimeStopManager)FindObjectOfType(typeof(TimeStopManager));
+            instance = (TimeStopManager)FindAnyObjectByType(typeof(TimeStopManager));
             DontDestroyOnLoad(gameObject); // ’Ç‰Á
         }
         else Destroy(gameObject);

@@ -11,7 +11,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 #endif
 
-namespace AddClass
+namespace AddUnityClass
 {
 
 
@@ -23,7 +23,7 @@ namespace AddClass
         {
             if (instance == null)
             {
-                instance = (T)FindObjectOfType(typeof(T));
+                instance = (T)FindAnyObjectByType(typeof(T));
                 DontDestroyOnLoad(gameObject); // 追加
             }
             else
@@ -42,7 +42,7 @@ namespace AddClass
                 {
                     Type t = typeof(T);
 
-                    instance = (T)FindObjectOfType(t);
+                    instance = (T)FindAnyObjectByType(t);
                     if (instance == null)
                     {
                         Debug.LogError(t + " をアタッチしているGameObjectはありません");
@@ -731,6 +731,8 @@ namespace AddClass
             return variables;
         }
     }
+
+
     public static class ConvertEnums<T1, T2> where T1 : Enum where T2 : class
     {
         public static Dictionary<T1, T2> GetDic()
@@ -744,6 +746,11 @@ namespace AddClass
 
             return newDic;
         }
+
+        /// <summary>
+        /// Enum型のListを返す
+        /// </summary>
+        /// <returns></returns>
         public static List<T1> GetEnumList()
         {
             List<T1> list = new List<T1>();
@@ -771,13 +778,18 @@ namespace AddClass
                 multiplyValue = profile.multiplyValue;
             }
         }
+        public void AssignProfile(CurveRatioProfile _profile)
+        {
+            profile = _profile;
+            AssignProfile();
+        }
 
         /// <summary>
         /// multiplyを乗算した値を返す
         /// </summary>
         /// <param name="_ratio">割合</param>
         /// <returns></returns>
-        public float Evalute(float _ratio)
+        public float Evaluate(float _ratio)
         {
             return Curve.Evaluate(_ratio) * MultiplyValue;
         }
@@ -809,7 +821,68 @@ namespace AddClass
         }
     }
 
+    [Serializable]
+    public class ColorWithUITag<T> where T : Enum
+    {
+        public Color color;
+        [SerializeField, NonEditable] private T tag;
 
+        public void Assign(T _tag)
+        {
+            tag = _tag;
+        }
+    }
+
+
+    public class ListInScene
+    {
+
+        /// <summary>
+        /// BuildSettingsからシーンの名前を取得する方法
+        /// 登録されているシーンをコンソールに印字する
+        /// </summary>
+        public static void CheckSceneName()
+        {
+
+            for (int i = 0; i < EditorBuildSettings.scenes.Length; i++)
+            {
+                // シーンのパスを取得
+                string scenePath = EditorBuildSettings.scenes[i].path;
+
+                // パスからシーン名を取得
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+
+                // コンソールに表示
+                Debug.Log($"{i}番目のsceneの名前は {sceneName} です");
+            }
+
+        }
+
+        /// <summary>
+        /// BuildSettingsに登録されているシーンの名前を取得する
+        /// 返り値はStringの配列
+        /// </summary>
+        public static List<string> GetSceneName()
+        {
+
+            // シーンの名前を入れる配列
+            List<string> sceneNameList = new List<string>();
+
+            for (int i = 0; i < EditorBuildSettings.scenes.Length; i++)
+            {
+                // シーンのパスを取得
+                string scenePath = EditorBuildSettings.scenes[i].path;
+
+                // パスからシーン名を取得
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+
+                // 配列に登録
+                sceneNameList.Add(sceneName);
+            }
+
+            return sceneNameList;
+        }
+    }
 
 
 
@@ -1242,10 +1315,17 @@ namespace AddClass
         public float entity;
         public float max;
         public float autoRecoverValue;
-        public void Initialize()
+
+        public void AssignMax(float _max)
+        {
+            max = _max;
+        }
+
+        public void AssingEntityByMax()
         {
             entity = max;
         }
+
 
         public void Update()
         {
@@ -1287,6 +1367,19 @@ namespace AddClass
             get
             {
                 if (entity <= 0.0f) { return true; }
+                return false;
+            }
+        }
+
+        public bool entityIsFull
+        {
+            get
+            {
+                if(entity >= max)
+                {
+                    return true;
+                }
+
                 return false;
             }
         }
@@ -1456,5 +1549,6 @@ public enum IncreseType
 {
     DeltaTime,
     Frame,
+    OneEach,
     Manual,
 }

@@ -1,3 +1,4 @@
+using AddUnityClass;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
@@ -9,13 +10,19 @@ public class Engine : MonoBehaviour
     [field: SerializeField] public SpriteRenderer img { get; private set; }
     [SerializeField] private GravityOperator gravityOperator = new GravityOperator();
     [field: SerializeField, NonEditable] public Vector3 velocityPlan {  get; set; }
+    [field: SerializeField, NonEditable] public Vector3 beforeVelocity { get; private set; }
     [field: SerializeField, NonEditable] public Quaternion rotatePlan { get; set; }
+    /// <summary>
+    /// velocityPlanÇåvéZÇ∑ÇÈä÷êîÇìoò^Ç∑ÇÈ
+    /// </summary>
     public Action velocityPlanAction { get; set; }
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         gravityOperator.Initialize();
         gravityActive = true;
+
+        velocityPlan = Vector3.zero;
         PlanReset();
     }
 
@@ -45,7 +52,9 @@ public class Engine : MonoBehaviour
         GravitySolution();
         //rb.rotation = rotatePlan;
         rb.velocity = velocityPlan;
+        //Debug.LogWarning(velocityPlan);
 
+        beforeVelocity = velocityPlan;
         return transform.position;
     }
 

@@ -1,4 +1,4 @@
-using AddClass;
+using AddUnityClass;
 using UnityEngine;
 
 public class TPSViewPoint : MonoBehaviour

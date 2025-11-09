@@ -1,4 +1,4 @@
-using AddClass;
+using AddUnityClass;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,29 +7,27 @@ using UnityEngine.SceneManagement;
 public class FrontCanvas : SingletonDontDestroy<FrontCanvas>
 {
     [field: SerializeField] public bool debugMode { get; private set; }
-    [SerializeField] SceneOperator sceneEditor;
-    [SerializeField] GameObject[] editors;
-    [field: SerializeField] public PresetsByPlayerType presets { get; private set; }
+    [SerializeField] private SceneOperator sceneOperator;
     [field: SerializeField] public AudioSource source { get; private set; }
-    private void Start()
+    protected virtual void Start()
     {
         source = GetComponent<AudioSource>();
-        FindSceneEditor();
+        FindSceneOperator();
         SceneManager.sceneLoaded += SceneChanged;
     }
-    private void Update()
+    protected virtual void Update()
     {
-        debugMode = sceneEditor.debugMode;
+        //debugMode = sceneOperator.debugMode;
     }
 
-    private void FindSceneEditor()
+    private void FindSceneOperator()
     {
-        sceneEditor = GameObject.FindWithTag(Tags.SceneOperator).GetComponent<SceneOperator>();
+        sceneOperator = GameObject.FindWithTag(Tags.SceneOperator).GetComponent<SceneOperator>();
     }
 
     private void SceneChanged(Scene scene, LoadSceneMode mode)
     {
-        FindSceneEditor();
+        FindSceneOperator();
 
     }
 }

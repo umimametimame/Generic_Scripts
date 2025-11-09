@@ -1,4 +1,4 @@
-using AddClass;
+using AddUnityClass;
 using System;
 using UnityEngine;
 using GenericChara;
@@ -183,7 +183,7 @@ using GenericChara;
     {
         get
         {
-            return !interval.active;
+            return !interval.reaching;
         }
     }
     public float nowMotionRatio

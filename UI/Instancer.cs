@@ -30,13 +30,21 @@ using System;
     /// <summary>
     /// 引数2に親オブジェクトを指定することが出来る。
     /// </summary>
-    /// <param name="afterObj"></param>
-    /// <param name="parent"></param>
-    public virtual void Initialize(Instancer afterObj = null, GameObject parent = null)
+    /// <param name="_afterObj"></param>
+    /// <param name="_parent"></param>
+    public virtual void Assign(Instancer _afterObj = null, GameObject _parent = null)
     {
-        if(parent != null) { this.parent = parent; }
+        if(_parent != null) 
+        { 
+            parent = _parent; 
+        }
+
         state = DisplayState.NotDisplayYet;
-        if (afterObj != null) { this.afterObj = afterObj; }
+
+        if (_afterObj != null) 
+        {
+            afterObj = _afterObj; 
+        }
     }
 
 
@@ -70,12 +78,17 @@ using System;
     {
         if (randomInstanceSound.Count > 0)
         { 
-            FrontCanvas.instance.source.PlayOneShot(randomSound); 
+            FrontCanvas.instance.source.PlayOneShot(randomSound);
         }
-        if(obj != null)
+
+        if (obj != null)
         {
-            clones.Add(GameObject.Instantiate(obj));
+            GameObject newObject;
+            newObject = GameObject.Instantiate(obj);
+            clones.Add(newObject);
+
         }
+
     }
     public virtual void Instance(GameObject parent)
     {
@@ -83,10 +96,15 @@ using System;
         { 
             FrontCanvas.instance.source.PlayOneShot(randomSound); 
         }
+
         if (obj != null)
         {
-            clones.Add(GameObject.Instantiate(obj, parent.transform));
+            GameObject newObject;
+            newObject = GameObject.Instantiate(obj, parent.transform);
+            clones.Add(newObject);
+
         }
+
 
     }
     public virtual GameObject Instance(Transform instancePos)

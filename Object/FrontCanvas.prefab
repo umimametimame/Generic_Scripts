@@ -152,7 +152,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <debugMode>k__BackingField: 0
-  sceneEditor: {fileID: 0}
-  editors: []
-  <presets>k__BackingField: {fileID: 0}
+  sceneOperator: {fileID: 0}
   <source>k__BackingField: {fileID: 0}
+  loadingUI:
+    <obj>k__BackingField: {fileID: 1212065778438490495, guid: 645a4831d18a8294cb48bad07a324449,
+      type: 3}
+    <clones>k__BackingField: []
+    <state>k__BackingField: 0
+    randomInstanceSound: []
+    parent: {fileID: 0}
+  loadInstanceInterval:
+    <active>k__BackingField: 0
+    interval: 0
+    <time>k__BackingField:
+      <value>k__BackingField: 0
+      <increseType>k__BackingField: 0
+      reversalIncrese: 0
+    <ratio>k__BackingField: 0

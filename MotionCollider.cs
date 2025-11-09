@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using AddClass;
+using AddUnityClass;
 using GenericChara;
 using System;
 

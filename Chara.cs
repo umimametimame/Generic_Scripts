@@ -1,4 +1,4 @@
-using AddClass;
+using AddUnityClass;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem.Users;
@@ -53,7 +53,7 @@ namespace GenericChara
         protected virtual void Spawn()
         {
 
-            respawnInterval.Initialize(false);
+            respawnInterval.Initialize(false, true);
         }
 
         /// <summary>
@@ -83,16 +83,16 @@ namespace GenericChara
                     break;
                 case CharaState.ReSpawn:
                     reSpawnAction?.Invoke();
-                    respawnInterval.Initialize(false);
+                    respawnInterval.Initialize(false, true);
                     StateChange(CharaState.Alive);
                     break;
             }
         }
         public void Initialize()
         {
-            hp.Initialize();
-            speed.Initialize();
-            pow.Initialize();
+            hp.AssingEntityByMax();
+            speed.AssingEntityByMax();
+            pow.AssingEntityByMax();
             moveVelocity.plan = Vector3.zero;
             rotatePlan = Quaternion.identity;
         }

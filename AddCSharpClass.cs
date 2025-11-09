@@ -1,7 +1,8 @@
-using AddClass;
+using AddUnityClass;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 // ============ C#系 =============
@@ -299,6 +300,14 @@ public class MinMax
     {
         max = -min;
     }
+
+    public float half
+    {
+        get
+        {
+            return max / 2.0f;
+        }
+    }
 }
 
 
@@ -315,4 +324,76 @@ public static class GetEnumList
 
         return retList;
     }
+}
+
+public class JsonOperator
+{
+    public static string jsonDirectoryName = "Json";
+    public static string jsonDirectoryPath
+    {
+        get
+        {
+            string _currentDir = Directory.GetCurrentDirectory();
+            string _relativeJsonDirPath = Path.Combine(_currentDir, jsonDirectoryName);
+            
+            Directory.CreateDirectory(_relativeJsonDirPath);
+
+            return _relativeJsonDirPath;
+        }
+    }
+
+    /// <summary>
+    /// 引数のファイル名のパスを返す
+    /// </summary>
+    /// <param name="_fileName"></param>
+    /// <returns></returns>
+    public static string JsonPath(string _fileName)
+    {
+        return Path.Combine(jsonDirectoryPath, _fileName);
+    }
+
+    /// <summary>
+    /// 引数のファイル名が存在するか
+    /// </summary>
+    /// <param name="_fileName"></param>
+    /// <returns></returns>
+    public static bool ExistJson(string _fileName)
+    {
+        bool _result = File.Exists(JsonPath(_fileName));
+        return _result;
+    }
+
+
+    public static void Write(object _object, string _fileName)
+    {
+        string _json = JsonUtility.ToJson(_object);
+        string _filePath = Path.Combine(jsonDirectoryPath, _fileName);
+
+        File.Delete(_filePath);
+
+        using (FileStream _file = new FileStream(_filePath, FileMode.OpenOrCreate, FileAccess.Write))
+        {
+            using (StreamWriter _writer = new StreamWriter(_file))
+            {
+                _writer.Write(_json);
+            }
+
+        }
+    }
+
+    public static T Read<T>(string _fileName)
+    {
+        string _filePath = Path.Combine(jsonDirectoryPath, _fileName);
+        using (FileStream _file = new FileStream(_filePath, FileMode.Open, FileAccess.Read))
+        {
+            using (StreamReader _reader = new StreamReader(_file))
+            {
+                string json = _reader.ReadToEnd();
+
+                return JsonUtility.FromJson<T>(json);
+            }
+
+        }
+    }
+
 }
