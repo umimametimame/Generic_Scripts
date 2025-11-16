@@ -43,7 +43,7 @@ public enum InRoomEnum
     Offline
 }
 
-//public enum SceneEnum
-//{
+public enum SceneEnum
+{
 
-//}
+}
