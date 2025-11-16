@@ -18,13 +18,6 @@ public class UserData
 public class InRoomParameter
 {
     [field: SerializeField, NonEditable] public InRoomEnum inRoomEnum { get; set; } = InRoomEnum.None;
-    public SceneEnum currentScene 
-    {
-        get
-        {
-            return (SceneEnum)SceneList.GetSceneIndex();
-        }
-    } 
     
 
     
@@ -41,9 +34,4 @@ public enum InRoomEnum
     Ready,
     InBattle,
     Offline
-}
-
-public enum SceneEnum
-{
-
 }
