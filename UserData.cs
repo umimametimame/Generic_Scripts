@@ -42,3 +42,8 @@ public enum InRoomEnum
     InBattle,
     Offline
 }
+
+//public enum SceneEnum
+//{
+
+//}
