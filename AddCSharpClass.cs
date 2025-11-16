@@ -622,6 +622,25 @@ public class JsonOperator
 
 }
 
+
+public class JsonFileName
+{
+    public static string UserData
+    {
+        get
+        {
+            return nameof(UserData) + FileExtension;
+        }
+    }
+
+    public static string FileExtension
+    {
+        get
+        {
+            return ".json";
+        }
+    }
+}
 /// <summary>
 /// スクリプト内のTをListにする
 /// </summary>
