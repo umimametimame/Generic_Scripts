@@ -1,4 +1,4 @@
-using AddClass;
+using AddUnityClass;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -56,7 +56,7 @@ public class UI_Fade : SingletonDontDestroy<UI_Fade>
         End,
     }
     [field: SerializeField] public Instancer obj { get; set; }
-    [field: SerializeField] public SpriteOrImage img { get; set; } = new SpriteOrImage();
+    [field: SerializeField] public UI_ImageOperator img { get; set; } = new UI_ImageOperator();
     [field: SerializeField] public float speed { get; set; }
     [field: SerializeField] public FadeType type{ get; set; }
     [field: SerializeField] public GameObject parent { get; set; }
@@ -68,7 +68,7 @@ public class UI_Fade : SingletonDontDestroy<UI_Fade>
     public void Initialize(GameObject parent, float alpha)
     {
         this.parent = parent;
-        obj.Initialize();
+        obj.Assign();
         initialAlpha = alpha;
 
     }
@@ -76,7 +76,7 @@ public class UI_Fade : SingletonDontDestroy<UI_Fade>
     {
         this.concurrentScene = concurrentScene;
         this.parent = parent;
-        obj.Initialize();
+        obj.Assign();
         initialAlpha = alpha;
 
     }
@@ -84,7 +84,7 @@ public class UI_Fade : SingletonDontDestroy<UI_Fade>
     {
         this.afterScene = afterScene;
         this.parent = parent;
-        obj.Initialize();
+        obj.Assign();
         initialAlpha = alpha;
 
         if (after != null) { this.afterFader = after; }
@@ -98,7 +98,7 @@ public class UI_Fade : SingletonDontDestroy<UI_Fade>
         if(obj.obj == null) { return; }
         parent.transform.SetAsLastSibling();
         obj.Instance(parent);
-        img.Initialize(obj.lastObj);
+        img.Assign(obj.lastObj);
         img.Alpha = initialAlpha;
     }
 

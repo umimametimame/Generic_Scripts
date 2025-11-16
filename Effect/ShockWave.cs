@@ -1,4 +1,4 @@
-using AddClass;
+using AddUnityClass;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,7 +10,7 @@ public class ShockWave : MonoBehaviour
 {
 
     [SerializeField] private GameObject targetObj;  // SpriteRenderer‚Ü‚½‚ÍImage‚ðŠÜ‚ÞGameObject
-    [SerializeField] private SpriteOrImage img;
+    [SerializeField] private UI_ImageOperator img;
     [SerializeField] private ShockWaveParameter param;
     private float initialAlpha;
     [SerializeField] private float nowAlpha;
@@ -64,8 +64,8 @@ public class ShockWave : MonoBehaviour
     }
     private void Start()
     {
-        img = new SpriteOrImage();
-        img.Initialize(gameObject);
+        img = new UI_ImageOperator();
+        img.Assign(gameObject);
 
         time = 0.0f;
         initialAlpha = img.color.a;

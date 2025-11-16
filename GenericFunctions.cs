@@ -7,28 +7,19 @@ using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.Assertions;
 using Unity.VisualScripting;
+using AYellowpaper.SerializedCollections;
+using UnityEngine.SceneManagement;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace AddClass
+namespace AddUnityClass
 {
 
 
     public class SingletonDontDestroy<T> : MonoBehaviour where T : MonoBehaviour
     {
-        public static T instance;
-
-        protected virtual void Awake()
-        {
-            if (instance == null)
-            {
-                instance = (T)FindObjectOfType(typeof(T));
-                DontDestroyOnLoad(gameObject); // 追加
-            }
-            else
-                Destroy(gameObject);
-        }
     }
     public abstract class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
     {
@@ -42,7 +33,7 @@ namespace AddClass
                 {
                     Type t = typeof(T);
 
-                    instance = (T)FindObjectOfType(t);
+                    instance = (T)FindAnyObjectByType(t);
                     if (instance == null)
                     {
                         Debug.LogError(t + " をアタッチしているGameObjectはありません");
@@ -437,170 +428,7 @@ namespace AddClass
             animator.Play(stateName.shortNameHash, 0, 0);
         }
 
-        public static void SetAnchor(this RectTransform source, AnchorPresets allign, int offsetX = 0, int offsetY = 0)
-        {
-            source.anchoredPosition = new Vector3(offsetX, offsetY, 0);
-
-            switch (allign)
-            {
-                case (AnchorPresets.TopLeft):
-                    {
-                        source.anchorMin = new Vector2(0, 1);
-                        source.anchorMax = new Vector2(0, 1);
-                        break;
-                    }
-                case (AnchorPresets.TopCenter):
-                    {
-                        source.anchorMin = new Vector2(0.5f, 1);
-                        source.anchorMax = new Vector2(0.5f, 1);
-                        break;
-                    }
-                case (AnchorPresets.TopRight):
-                    {
-                        source.anchorMin = new Vector2(1, 1);
-                        source.anchorMax = new Vector2(1, 1);
-                        break;
-                    }
-
-                case (AnchorPresets.MiddleLeft):
-                    {
-                        source.anchorMin = new Vector2(0, 0.5f);
-                        source.anchorMax = new Vector2(0, 0.5f);
-                        break;
-                    }
-                case (AnchorPresets.MiddleCenter):
-                    {
-                        source.anchorMin = new Vector2(0.5f, 0.5f);
-                        source.anchorMax = new Vector2(0.5f, 0.5f);
-                        break;
-                    }
-                case (AnchorPresets.MiddleRight):
-                    {
-                        source.anchorMin = new Vector2(1, 0.5f);
-                        source.anchorMax = new Vector2(1, 0.5f);
-                        break;
-                    }
-
-                case (AnchorPresets.BottomLeft):
-                    {
-                        source.anchorMin = new Vector2(0, 0);
-                        source.anchorMax = new Vector2(0, 0);
-                        break;
-                    }
-                case (AnchorPresets.BottonCenter):
-                    {
-                        source.anchorMin = new Vector2(0.5f, 0);
-                        source.anchorMax = new Vector2(0.5f, 0);
-                        break;
-                    }
-                case (AnchorPresets.BottomRight):
-                    {
-                        source.anchorMin = new Vector2(1, 0);
-                        source.anchorMax = new Vector2(1, 0);
-                        break;
-                    }
-
-                case (AnchorPresets.HorStretchTop):
-                    {
-                        source.anchorMin = new Vector2(0, 1);
-                        source.anchorMax = new Vector2(1, 1);
-                        break;
-                    }
-                case (AnchorPresets.HorStretchMiddle):
-                    {
-                        source.anchorMin = new Vector2(0, 0.5f);
-                        source.anchorMax = new Vector2(1, 0.5f);
-                        break;
-                    }
-                case (AnchorPresets.HorStretchBottom):
-                    {
-                        source.anchorMin = new Vector2(0, 0);
-                        source.anchorMax = new Vector2(1, 0);
-                        break;
-                    }
-
-                case (AnchorPresets.VertStretchLeft):
-                    {
-                        source.anchorMin = new Vector2(0, 0);
-                        source.anchorMax = new Vector2(0, 1);
-                        break;
-                    }
-                case (AnchorPresets.VertStretchCenter):
-                    {
-                        source.anchorMin = new Vector2(0.5f, 0);
-                        source.anchorMax = new Vector2(0.5f, 1);
-                        break;
-                    }
-                case (AnchorPresets.VertStretchRight):
-                    {
-                        source.anchorMin = new Vector2(1, 0);
-                        source.anchorMax = new Vector2(1, 1);
-                        break;
-                    }
-
-                case (AnchorPresets.StretchAll):
-                    {
-                        source.anchorMin = new Vector2(0, 0);
-                        source.anchorMax = new Vector2(1, 1);
-                        break;
-                    }
-            }
-        }
-
-        public static void SetPivot(this RectTransform source, PivotPresets preset)
-        {
-
-            switch (preset)
-            {
-                case (PivotPresets.TopLeft):
-                    {
-                        source.pivot = new Vector2(0, 1);
-                        break;
-                    }
-                case (PivotPresets.TopCenter):
-                    {
-                        source.pivot = new Vector2(0.5f, 1);
-                        break;
-                    }
-                case (PivotPresets.TopRight):
-                    {
-                        source.pivot = new Vector2(1, 1);
-                        break;
-                    }
-
-                case (PivotPresets.MiddleLeft):
-                    {
-                        source.pivot = new Vector2(0, 0.5f);
-                        break;
-                    }
-                case (PivotPresets.MiddleCenter):
-                    {
-                        source.pivot = new Vector2(0.5f, 0.5f);
-                        break;
-                    }
-                case (PivotPresets.MiddleRight):
-                    {
-                        source.pivot = new Vector2(1, 0.5f);
-                        break;
-                    }
-
-                case (PivotPresets.BottomLeft):
-                    {
-                        source.pivot = new Vector2(0, 0);
-                        break;
-                    }
-                case (PivotPresets.BottomCenter):
-                    {
-                        source.pivot = new Vector2(0.5f, 0);
-                        break;
-                    }
-                case (PivotPresets.BottomRight):
-                    {
-                        source.pivot = new Vector2(1, 0);
-                        break;
-                    }
-            }
-        }
+        
         /// <summary>
         /// CanvasのRender Mode が Scene Space - Overlay の場合に、ワールド座標をスクリーン座標に変換する
         /// </summary>
@@ -731,6 +559,8 @@ namespace AddClass
             return variables;
         }
     }
+
+
     public static class ConvertEnums<T1, T2> where T1 : Enum where T2 : class
     {
         public static Dictionary<T1, T2> GetDic()
@@ -744,6 +574,11 @@ namespace AddClass
 
             return newDic;
         }
+
+        /// <summary>
+        /// Enum型のListを返す
+        /// </summary>
+        /// <returns></returns>
         public static List<T1> GetEnumList()
         {
             List<T1> list = new List<T1>();
@@ -771,13 +606,18 @@ namespace AddClass
                 multiplyValue = profile.multiplyValue;
             }
         }
+        public void AssignProfile(CurveRatioProfile _profile)
+        {
+            profile = _profile;
+            AssignProfile();
+        }
 
         /// <summary>
         /// multiplyを乗算した値を返す
         /// </summary>
         /// <param name="_ratio">割合</param>
         /// <returns></returns>
-        public float Evalute(float _ratio)
+        public float Evaluate(float _ratio)
         {
             return Curve.Evaluate(_ratio) * MultiplyValue;
         }
@@ -810,6 +650,75 @@ namespace AddClass
     }
 
 
+    public class SceneList
+    {
+
+        /// <summary>
+        /// BuildSettingsからシーンの名前を取得する方法
+        /// 登録されているシーンをコンソールに印字する
+        /// </summary>
+        public static void CheckSceneName()
+        {
+
+            for (int i = 0; i < EditorBuildSettings.scenes.Length; i++)
+            {
+                // シーンのパスを取得
+                string scenePath = EditorBuildSettings.scenes[i].path;
+
+                // パスからシーン名を取得
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+
+                // コンソールに表示
+                Debug.Log($"{i}番目のsceneの名前は {sceneName} です");
+            }
+
+        }
+
+        /// <summary>
+        /// BuildSettingsに登録されているシーンの名前を取得する
+        /// 返り値はStringの配列
+        /// </summary>
+        public static List<string> GetSceneName()
+        {
+
+            // シーンの名前を入れる配列
+            List<string> sceneNameList = new List<string>();
+
+            for (int i = 0; i < EditorBuildSettings.scenes.Length; i++)
+            {
+                // シーンのパスを取得
+                string scenePath = EditorBuildSettings.scenes[i].path;
+
+                // パスからシーン名を取得
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+
+                // 配列に登録
+                sceneNameList.Add(sceneName);
+            }
+
+            return sceneNameList;
+        }
+
+        public static int GetSceneIndex()
+        {
+            Scene _activeScene = SceneManager.GetActiveScene();
+            for (int i = 0; i < EditorBuildSettings.scenes.Length; i++)
+            {
+                // シーンのパスを取得
+                string scenePath = EditorBuildSettings.scenes[i].path;
+
+                // パスからシーン名を取得
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+
+                if (sceneName == _activeScene.name)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+    }
 
 
 
@@ -1242,10 +1151,17 @@ namespace AddClass
         public float entity;
         public float max;
         public float autoRecoverValue;
-        public void Initialize()
+
+        public void AssignMax(float _max)
+        {
+            max = _max;
+        }
+
+        public void AssingEntityByMax()
         {
             entity = max;
         }
+
 
         public void Update()
         {
@@ -1287,6 +1203,19 @@ namespace AddClass
             get
             {
                 if (entity <= 0.0f) { return true; }
+                return false;
+            }
+        }
+
+        public bool entityIsFull
+        {
+            get
+            {
+                if(entity >= max)
+                {
+                    return true;
+                }
+
                 return false;
             }
         }
@@ -1412,6 +1341,182 @@ namespace AddClass
     #endregion
 }
 
+public static class RectOperator
+{
+    public static void SetAnchor(this RectTransform source, AnchorPresets allign, int offsetX = 0, int offsetY = 0)
+    {
+        source.anchoredPosition = new Vector3(offsetX, offsetY, 0);
+
+        switch (allign)
+        {
+            case (AnchorPresets.TopLeft):
+                {
+                    source.anchorMin = new Vector2(0, 1);
+                    source.anchorMax = new Vector2(0, 1);
+                    break;
+                }
+            case (AnchorPresets.TopCenter):
+                {
+                    source.anchorMin = new Vector2(0.5f, 1);
+                    source.anchorMax = new Vector2(0.5f, 1);
+                    break;
+                }
+            case (AnchorPresets.TopRight):
+                {
+                    source.anchorMin = new Vector2(1, 1);
+                    source.anchorMax = new Vector2(1, 1);
+                    break;
+                }
+
+            case (AnchorPresets.MiddleLeft):
+                {
+                    source.anchorMin = new Vector2(0, 0.5f);
+                    source.anchorMax = new Vector2(0, 0.5f);
+                    break;
+                }
+            case (AnchorPresets.MiddleCenter):
+                {
+                    source.anchorMin = new Vector2(0.5f, 0.5f);
+                    source.anchorMax = new Vector2(0.5f, 0.5f);
+                    break;
+                }
+            case (AnchorPresets.MiddleRight):
+                {
+                    source.anchorMin = new Vector2(1, 0.5f);
+                    source.anchorMax = new Vector2(1, 0.5f);
+                    break;
+                }
+
+            case (AnchorPresets.BottomLeft):
+                {
+                    source.anchorMin = new Vector2(0, 0);
+                    source.anchorMax = new Vector2(0, 0);
+                    break;
+                }
+            case (AnchorPresets.BottonCenter):
+                {
+                    source.anchorMin = new Vector2(0.5f, 0);
+                    source.anchorMax = new Vector2(0.5f, 0);
+                    break;
+                }
+            case (AnchorPresets.BottomRight):
+                {
+                    source.anchorMin = new Vector2(1, 0);
+                    source.anchorMax = new Vector2(1, 0);
+                    break;
+                }
+
+            case (AnchorPresets.HorStretchTop):
+                {
+                    source.anchorMin = new Vector2(0, 1);
+                    source.anchorMax = new Vector2(1, 1);
+                    break;
+                }
+            case (AnchorPresets.HorStretchMiddle):
+                {
+                    source.anchorMin = new Vector2(0, 0.5f);
+                    source.anchorMax = new Vector2(1, 0.5f);
+                    break;
+                }
+            case (AnchorPresets.HorStretchBottom):
+                {
+                    source.anchorMin = new Vector2(0, 0);
+                    source.anchorMax = new Vector2(1, 0);
+                    break;
+                }
+
+            case (AnchorPresets.VertStretchLeft):
+                {
+                    source.anchorMin = new Vector2(0, 0);
+                    source.anchorMax = new Vector2(0, 1);
+                    break;
+                }
+            case (AnchorPresets.VertStretchCenter):
+                {
+                    source.anchorMin = new Vector2(0.5f, 0);
+                    source.anchorMax = new Vector2(0.5f, 1);
+                    break;
+                }
+            case (AnchorPresets.VertStretchRight):
+                {
+                    source.anchorMin = new Vector2(1, 0);
+                    source.anchorMax = new Vector2(1, 1);
+                    break;
+                }
+
+            case (AnchorPresets.StretchAll):
+                {
+                    source.anchorMin = new Vector2(0, 0);
+                    source.anchorMax = new Vector2(1, 1);
+                    break;
+                }
+        }
+    }
+
+    public static void SetPivot(this RectTransform source, PivotPresets preset)
+    {
+
+        switch (preset)
+        {
+            case (PivotPresets.TopLeft):
+                {
+                    source.pivot = new Vector2(0, 1);
+                    break;
+                }
+            case (PivotPresets.TopCenter):
+                {
+                    source.pivot = new Vector2(0.5f, 1);
+                    break;
+                }
+            case (PivotPresets.TopRight):
+                {
+                    source.pivot = new Vector2(1, 1);
+                    break;
+                }
+
+            case (PivotPresets.MiddleLeft):
+                {
+                    source.pivot = new Vector2(0, 0.5f);
+                    break;
+                }
+            case (PivotPresets.MiddleCenter):
+                {
+                    source.pivot = new Vector2(0.5f, 0.5f);
+                    break;
+                }
+            case (PivotPresets.MiddleRight):
+                {
+                    source.pivot = new Vector2(1, 0.5f);
+                    break;
+                }
+
+            case (PivotPresets.BottomLeft):
+                {
+                    source.pivot = new Vector2(0, 0);
+                    break;
+                }
+            case (PivotPresets.BottomCenter):
+                {
+                    source.pivot = new Vector2(0.5f, 0);
+                    break;
+                }
+            case (PivotPresets.BottomRight):
+                {
+                    source.pivot = new Vector2(1, 0);
+                    break;
+                }
+        }
+    }
+    public static void RectAdjustGUI(RectTransform _rectTransform)
+    {
+        Debug.Log(
+            $"Left  :{_rectTransform.offsetMin.x}    PosY   :{_rectTransform.offsetMax.y}\n" +
+            $"Right :{_rectTransform.offsetMax.x}    Height :{-_rectTransform.offsetMin.y}"
+            );
+
+    }
+}
+
 public enum AnchorPresets
 {
     TopLeft,
@@ -1456,5 +1561,164 @@ public enum IncreseType
 {
     DeltaTime,
     Frame,
+    OneEach,
     Manual,
+}
+
+public static class TagOperator
+{
+    public static void AddTag(string _tagName)
+    {
+        UnityEngine.Object[] asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
+        if ((asset != null) && (asset.Length > 0))
+        {
+            SerializedObject so = new SerializedObject(asset[0]);
+            SerializedProperty tags = so.FindProperty("tags");
+
+            for (int i = 0; i < tags.arraySize; ++i)
+            {
+                if (tags.GetArrayElementAtIndex(i).stringValue == _tagName)
+                {
+                    return;
+                }
+            }
+
+            int index = tags.arraySize;
+            tags.InsertArrayElementAtIndex(index);
+            tags.GetArrayElementAtIndex(index).stringValue = _tagName;
+            so.ApplyModifiedProperties();
+            so.Update();
+        }
+    }
+
+    public static void AddTag<T>() where T : Enum
+    {
+        List<T> _enum = EnumOperator.Get<T>();
+
+        for(int i = 0; i < _enum.Count; i++)
+        {
+            AddTag(_enum[i].ToString());
+        }
+    }
+}
+
+[Serializable]
+public class StringEnum
+{
+    public int index;
+    [SerializeField] private List<string> value;
+    public StringEnum(List<string> _strings)
+    {
+        value = _strings;
+    }
+
+    public static explicit operator int(StringEnum _string)
+    {
+        return _string.index;
+    }
+
+    public string Value
+    {
+        get
+        {
+            if (index > value.Count)
+            {
+                return null;
+            }
+            else if (index < 0)
+            {
+                return null;
+            }
+
+            return value[index];
+        }
+    }
+
+    public List<string> List
+    {
+        get
+        {
+            return value;
+        }
+    }
+
+    public int Count
+    {
+        get
+        {
+            return value.Count;
+        }
+    }
+}
+
+[Serializable]
+public class UIValueOperator
+{
+    public UIValueType type;
+    public Instancer displayField = new Instancer();
+    public Instancer inputField = new Instancer();
+    public Instancer switchField = new Instancer();
+    private SerializedDictionary<UIValueType, Instancer> instancers = new SerializedDictionary<UIValueType, Instancer>();
+    public string value;
+
+    public UIValueOperator()
+    {
+        instancers.Add(UIValueType.Display, displayField);
+        instancers.Add(UIValueType.InputField, inputField);
+        instancers.Add(UIValueType.Switch, switchField);
+    }
+
+    public void Assign(UIValueType _type)
+    {
+        type = _type;
+    }
+
+    public TextMeshProUGUI Instance(GameObject _parent)
+    {
+        if (type == UIValueType.None)
+        {
+            return null;
+        }
+
+        TextMeshProUGUI _clone = new TextMeshProUGUI();
+        instancers[type].Instance(_parent);
+        _clone = instancers[type].lastObj.GetComponentInChildren<TextMeshProUGUI>();
+
+        return _clone;
+    }
+
+
+    /// <summary>
+    /// 文字をトリミングしUIValueTypeを返す
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="_value"></param>
+    /// <returns></returns>
+    public static UIValueType GetUIType<T>(T _value) where T : Enum
+    {
+        int _removeIndex = 3;
+        List<UIValueType> _enums = EnumOperator.Get<UIValueType>();
+        string _convert = EnumOperator.GetStringExceptIdentifier_Less("_", _value);
+        for (int i = 0; i < _enums.Count; i++)
+        {
+            string _enumStr = _enums[i].ToString();
+            _enumStr = _enumStr.Remove(_removeIndex, _enumStr.Length - _removeIndex);
+
+
+            if (_enumStr == _convert)
+            {
+                return _enums[i];
+            }
+        }
+
+        return UIValueType.None;
+    }
+}
+
+public enum UIValueType
+{
+    Display,
+    InputField,
+    Switch,
+    None,
 }

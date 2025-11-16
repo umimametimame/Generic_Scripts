@@ -1,28 +1,46 @@
+using AddUnityClass;
+using Fusion;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(Rigidbody))]
-public class Engine : MonoBehaviour
+public class Engine : NetworkBehaviour
 {
     [SerializeField] private Rigidbody rb;
     [field: SerializeField] public SpriteRenderer img { get; private set; }
     [SerializeField] private GravityOperator gravityOperator = new GravityOperator();
     [field: SerializeField, NonEditable] public Vector3 velocityPlan {  get; set; }
+    [field: SerializeField, NonEditable] public Vector3 beforeVelocity { get; private set; }
     [field: SerializeField, NonEditable] public Quaternion rotatePlan { get; set; }
+    /// <summary>
+    /// velocityPlanï¿½ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½ï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½
+    /// </summary>
     public Action velocityPlanAction { get; set; }
-    private void Start()
+    public override void Spawned()
     {
         rb = GetComponent<Rigidbody>();
         gravityOperator.Initialize();
         gravityActive = true;
+
+        velocityPlan = Vector3.zero;
         PlanReset();
     }
 
-    private void Update()
+    public override void FixedUpdateNetwork()
     {
+        if (HasStateAuthority == false)
+        {
+            //Debug.LogWarning("Engine");
+
+        }
         PlanReset();
         VelocitySolution();
+        if (HasStateAuthority == false)
+        {
+            //Debug.LogWarning("Engine Finish");
+
+        }
     }
 
     public void SetGravity(GravityProfile gp)
@@ -37,15 +55,18 @@ public class Engine : MonoBehaviour
     }
 
     /// <summary>
-    /// velocityPlan‚ğ˜M‚éŠÖ”‚ğ“o˜^‚µA‚»‚ÌŒãˆÚ“®‚³‚¹‚é
+    /// velocityPlanï¿½ï¿½Mï¿½ï¿½Öï¿½ï¿½ï¿½oï¿½^ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ÌŒï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     private Vector3 VelocitySolution()
     {
         velocityPlanAction?.Invoke();
         GravitySolution();
         //rb.rotation = rotatePlan;
-        rb.velocity = velocityPlan;
+        rb.linearVelocity = velocityPlan;
+        //if (velocityPlan != Vector3.zero)
+        //    Debug.LogWarning(velocityPlan);
 
+        beforeVelocity = velocityPlan;
         return transform.position;
     }
 
@@ -54,6 +75,10 @@ public class Engine : MonoBehaviour
     {
         gravityOperator.Update();
         velocityPlan += gravityOperator.currentGravity.plan;
+        if (HasInputAuthority == true)
+        {
+            //Debug.Log(gravityOperator.currentGravity.plan);
+        }
     }
 
     public bool gravityActive

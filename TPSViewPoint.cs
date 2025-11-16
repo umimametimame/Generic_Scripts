@@ -1,10 +1,10 @@
-using AddClass;
+using AddUnityClass;
+using Fusion;
 using UnityEngine;
 
-public class TPSViewPoint : MonoBehaviour
+public class TPSViewPoint : NetworkBehaviour
 {
     [field: SerializeField] public Camera cam { get; set; }
-    [SerializeField] private Engine engine;
     [SerializeField] private float sensitivity;
     [field: SerializeField, NonEditable] public EntityAndPlan<Vector2> inputViewPoint { get; set; }
     [field: SerializeField, NonEditable] public Vector3 viewPointPosPlan { get; set; }
@@ -14,22 +14,42 @@ public class TPSViewPoint : MonoBehaviour
     [SerializeField] private VecRangeOperator vertical;
     [SerializeField] private Transform seesaw;
 
-    private void Start()
+    public override void Spawned()
     {
-        Initialize();
+        AssignFusion();
         vertical.AssignProfile();
         Reset();
     }
-    public void Initialize()
+    public void AssignFusion()
     {
+        NetworkRunner _runner = GameObject.FindWithTag(Fusion_Connect.networkRunnerTag).GetComponent<NetworkRunner>();
+        Debug.Log($"HasInputAutority {HasInputAuthority}\nHasStateAuthority {HasStateAuthority}");
+        if (_runner.GameMode == GameMode.Shared)
+        {
+            if (HasStateAuthority == false)
+            {
+                cam.enabled = false;
+            }
+        }
+        else
+        {
+
+
+            if (HasInputAuthority == false)
+            {
+                cam.enabled = false;
+            }
+        }
     }
 
     public void Reset()
     {
         cam.transform.eulerAngles = transform.eulerAngles;
     }
-
-    public void Update()
+    private void Update()
+    {
+    }
+    public override void FixedUpdateNetwork()
     {
         SeeSawController();
         cam.transform.LookAt(viewPointObject);

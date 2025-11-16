@@ -1,7 +1,9 @@
-using AddClass;
+using AddUnityClass;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem.Users;
+using Fusion;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -9,7 +11,7 @@ using UnityEditor;
 namespace GenericChara
 {
     
-    public class Chara : MonoBehaviour
+    public class Chara : NetworkBehaviour
     {
         public enum CharaState
         {
@@ -29,13 +31,13 @@ namespace GenericChara
         public float assignSpeed { get; protected set; }
         [field: SerializeField] public Parameter pow;
         public Engine engine { get; set; }
-        [field: SerializeField, NonEditable] public bool alive { get; protected set; }  //  ê∂ë∂
+        [field: SerializeField, NonEditable] public bool alive { get; protected set; }
         [SerializeField] private Interval respawnInterval;
         [SerializeField] protected EntityAndPlan<Vector3> moveVelocity;
         [SerializeField] protected Quaternion rotatePlan;
         protected Action<UnderAttackType> underAttackAction;
         [field: SerializeField] public Chara lastAttacker { get; protected set; }
-        protected virtual void Start()
+        public override void Spawned()
         {
             Initialize();
             engine = GetComponent<Engine>();
@@ -53,7 +55,7 @@ namespace GenericChara
         protected virtual void Spawn()
         {
 
-            respawnInterval.Initialize(false);
+            respawnInterval.Initialize(false, true);
         }
 
         /// <summary>
@@ -61,7 +63,7 @@ namespace GenericChara
         /// StateãÏìÆèàóù<br/>
         /// moveVelocityÇÃÉäÉZÉbÉg
         /// </summary>
-        protected virtual void Update()
+        public override void FixedUpdateNetwork()
         {
             hp.Update();
             speed.Update();
@@ -83,16 +85,16 @@ namespace GenericChara
                     break;
                 case CharaState.ReSpawn:
                     reSpawnAction?.Invoke();
-                    respawnInterval.Initialize(false);
+                    respawnInterval.Initialize(false, true);
                     StateChange(CharaState.Alive);
                     break;
             }
         }
         public void Initialize()
         {
-            hp.Initialize();
-            speed.Initialize();
-            pow.Initialize();
+            hp.AssingEntityByMax();
+            speed.AssingEntityByMax();
+            pow.AssingEntityByMax();
             moveVelocity.plan = Vector3.zero;
             rotatePlan = Quaternion.identity;
         }

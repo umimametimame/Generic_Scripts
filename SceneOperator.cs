@@ -16,7 +16,7 @@ public class SceneOperator : MonoBehaviour
     //    instanceÇÕìØÉNÉâÉXñºÇ≈êÈåæ
     //    if (instance == null)
     //    {
-    //        instance = (SceneOperator_GameScene)FindObjectOfType(typeof(SceneOperator_GameScene));
+    //        instance = (SceneOperator_GameScene)FindAnyObjectByType(typeof(SceneOperator_GameScene));
     //        DontDestroyOnLoad(gameObject); // í«â¡
     //    }
     //    else
@@ -28,8 +28,7 @@ public class SceneOperator : MonoBehaviour
 
     protected virtual void Awake()
     {
-
-        canvas.Initialize();
+        canvas.Assign();
         canvas.Instance();
     }
     protected virtual void Start()

@@ -1,6 +1,5 @@
-using AddClass;
+using AddUnityClass;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -458,8 +457,9 @@ public class Traffic
 [Serializable]
 public class Interval
 {
-    [field: SerializeField, NonEditable] public bool active { get; private set; }
-    [field: SerializeField] public float interval { get; private set; }
+    [field: SerializeField, NonEditable] public bool reaching { get; private set; }
+    [field: SerializeField, NonEditable] public bool reachedImpact { get; private set; }
+    public float interval;
     [field: SerializeField, NonEditable] public VariedTime time { get; private set; } = new VariedTime();
     [field: SerializeField, NonEditable] public float ratio { get; private set; }
     private bool autoReset;
@@ -474,12 +474,16 @@ public class Interval
     /// ・valueがinterval値に到達したら0に戻るか<br/>
     /// ・最初のinterval値
     /// </summary>
-    /// <param name="start"></param>
-    public void Initialize(bool start, bool autoReset = true, float _interval = 0.0f)
+    /// <param name="_start"></param>
+    public void Initialize(bool _start, bool _autoReset, float _interval)
     {
-        if (_interval != 0.0f) { this.interval = _interval; }
-        this.autoReset = autoReset;
-        if (start == true)
+        if (_interval != 0.0f) 
+        { 
+            interval = _interval; 
+        }
+
+        autoReset = _autoReset;
+        if (_start == true)
         {
             time.Initialize(_interval);
         }
@@ -488,11 +492,22 @@ public class Interval
             time.Initialize();
         }
 
-        active = (time.value >= _interval) ? true : false;
+        if(time.value >= _interval)
+        {
+            reaching = true;
+        }
+        else
+        {
+            reaching = false;
+        }
         reached = false;
         RatioUpdate();
     }
 
+    public void Initialize(bool _start, bool _autoReset)
+    {
+        Initialize(_start, _autoReset, interval);
+    }
 
     public void Update(float manualValue = 0.0f)
     {
@@ -507,13 +522,37 @@ public class Interval
                 reachAction?.Invoke();
             }
 
-            active = true;
+            reaching = true;
             activeAction?.Invoke();
             if (autoReset == true) { Reset(); }
         }
         else
         {
-            active = false;
+            reaching = false;
+            lowAction?.Invoke();
+        }
+    }
+
+    public void Update()
+    {
+        time.Update();
+        RatioUpdate();
+
+        if (time.value >= interval)
+        {
+            if (reached == false)
+            {
+                reached = true;
+                reachAction?.Invoke();
+            }
+
+            reaching = true;
+            activeAction?.Invoke();
+            if (autoReset == true) { Reset(); }
+        }
+        else
+        {
+            reaching = false;
             lowAction?.Invoke();
         }
     }
@@ -524,7 +563,7 @@ public class Interval
     public void Reset()
     {
         time.Initialize();
-        active = (time.value >= interval) ? true : false;
+        reaching = (time.value >= interval) ? true : false;
         reached = false;
         RatioUpdate();
     }
@@ -535,7 +574,7 @@ public class Interval
     public void Reset(float _value)
     {
         time.Initialize(_value);
-        active = (time.value >= interval) ? true : false;
+        reaching = (time.value >= interval) ? true : false;
         reached = false;
         RatioUpdate();
     }
@@ -568,7 +607,7 @@ public class Range
     [field: SerializeField, NonEditable] public bool isReaching { get; private set; }
     private bool beforeBool;
 
-    [SerializeField] private MinMax thresholdRange = new MinMax();
+    [field: SerializeField] public MinMax thresholdRange { get; private set; } = new MinMax();
     [SerializeField, NonEditable] private float currentValue;
     public MomentAction withinRangeAction { get; set; } = new MomentAction();   // 範囲内に入る時に一度行われる
     public Action inRangeAction { get; set; }                                   // 範囲内に入っている間に行われる
@@ -619,7 +658,7 @@ public class Range
         {
             if (beforeBool == false)    // 入った瞬間なら
             {
-                withinRangeAction.Enable();
+                withinRangeAction.Invoke();
             }
 
             inRangeAction?.Invoke();
@@ -630,7 +669,7 @@ public class Range
         {
             if (isReaching == false)  // 出る瞬間なら
             {
-                exitRangeAction.Enable();
+                exitRangeAction.Invoke();
             }
         }
 
@@ -688,39 +727,30 @@ public class SmoothRotate
 [Serializable]
 public class Easing
 {
-    [SerializeField] private Traffic traffic;
-    [field: SerializeField, NonEditable] public float nowTime { get; private set; }
-    [field: SerializeField, NonEditable] public float evaluteValue { get; private set; }
     [field: SerializeField] public AnimationCurve curve { get; set; }
+    public Interval time = new Interval();
 
     public void Initialize()
     {
-        Reset();
-
-        traffic.Initialize();
-        traffic.enableAction += Evalute;
-        traffic.disableAction += Reset;
+        time.Initialize(false, false);
     }
+
     public void Update()
     {
-        traffic.Update();
+        time.Update();
     }
 
     public void Reset()
     {
-        nowTime = 0.0f;
-        evaluteValue *= curve.Evaluate(nowTime);
-    }
-    public void Evalute()
-    {
-        evaluteValue = curve.Evaluate(nowTime);
-        nowTime += Time.deltaTime;
+        time.Reset();
     }
 
-    public bool active
+    public float evaluate
     {
-        get { return traffic.active; }
-        set { traffic.active = value; }
+        get
+        {
+            return curve.Evaluate(time.ratio);
+        }
     }
 }
 
@@ -785,7 +815,7 @@ public class MomentAction
         activated = false;
     }
 
-    public void Enable()
+    public void Invoke()
     {
         if (activated == false)
         {
@@ -793,6 +823,7 @@ public class MomentAction
             activated = true;
         }
     }
+
     
     public void Add(Action _action)
     {
@@ -808,12 +839,12 @@ public class Shake
 
     public void Initialize()
     {
-        interval.Initialize(true);
+        interval.Initialize(true, true);
     }
 
     public void Update()
     {
-        if (interval.active == true)
+        if (interval.reaching == true)
         {
         }
         interval.Update();
@@ -832,22 +863,29 @@ public class VariedTime
         value = startTime;
         if (type != default) { increseType = type; }
     }
-    public void Update(float value = 0.0f)
+    public void Update(float _value = 0.0f)
     {
         switch (increseType)
         {
             case IncreseType.DeltaTime:
-                if (reversalIncrese == true) { this.value -= Time.deltaTime; }
-                else { this.value += Time.deltaTime; }
+                if (reversalIncrese == true) { value -= Time.deltaTime; }
+                else { value += Time.deltaTime; }
                 break;
 
             case IncreseType.Frame:
-                if (reversalIncrese == true) { this.value++; }
-                else { this.value--; }
+                if (reversalIncrese == true)
+                {
+                    value--; 
+                }
+                else 
+                { 
+                    value++; 
+                }
                 break;
 
+
             case IncreseType.Manual:
-                this.value = value;
+                value = _value;
                 break;
         }
 
@@ -869,23 +907,23 @@ public class ValueChecker<T> where T : struct
     [field: SerializeField, NonEditable] public bool changed { get; private set; }
     public Action changedAction { get; set; }
 
-    public void Initialize(T value)
+    public void Initialize(T _value)
     {
-        Reset(value);
+        Reset(_value);
         changedAction = null;
     }
 
-    public void Reset(T value)
+    public void Reset(T _value)
     {
-        this.value = value;
-        beforeValue = value;
+        value = _value;
+        beforeValue = _value;
         changed = false;
     }
 
-    public void Update(T value)
+    public void Update(T _value)
     {
-        this.value = value;
-        changed = !value.Equals(beforeValue);   // 変更されていたら
+        value = _value;
+        changed = !_value.Equals(beforeValue);   // 変更されていたら
 
         if (changed == true)
         {
@@ -894,42 +932,244 @@ public class ValueChecker<T> where T : struct
 
         beforeValue = value;
     }
+
 }
 
-
-/// <summary>
-/// SpriteRenderer,Image,TMProのすべてを取得する
-/// </summary>
 [Serializable]
-public class SpriteOrImage
+public class UI_ImageOperator
 {
-    [field: SerializeField] public GameObject target { get; set; }
-    [field: SerializeField] public SpriteRenderer[] sprites { get; set; }
-    [field: SerializeField] public Image[] images { get; set; }
-    [field: SerializeField] public TextMeshProUGUI[] texts { get; set; }
-
-    /// <summary>
-    /// 引数はSpriteRendererまたはImageがアタッチされたGameObject
-    /// </summary>
-    /// <param name="obj"></param>
-    public void Initialize(GameObject obj = null)
+    [field: SerializeField] public GameObject target { get; private set; }
+    public bool getOnlyYourself;
+    public UI_Image images = new UI_Image();
+    public UI_Image exclusionList = new UI_Image();
+    public void Assign()
     {
-        if (obj != null)
+        if (getOnlyYourself == true)
         {
-            sprites = obj.GetComponentsInChildren<SpriteRenderer>();
-            images = obj.GetComponentsInChildren<Image>();
-            texts = obj.GetComponentsInChildren<TextMeshProUGUI>();
+            images.GetComponents_Sorted(exclusionList, target);
         }
         else
         {
-            sprites = target.GetComponentsInChildren<SpriteRenderer>();
-            images = target.GetComponentsInChildren<Image>();
-            texts = target.GetComponentsInChildren<TextMeshProUGUI>();
-
+            images.GetComponentsInChildren_Sorted(exclusionList,target);
         }
-        if (sprites.Length == 0 && images.Length == 0 && texts.Length == 0)
+    }
+
+    public void Assign(GameObject _obj)
+    {
+        if (getOnlyYourself == true)
         {
-            Debug.LogError("いずれもアタッチされていません");
+            images.GetComponents_Sorted(exclusionList, _obj);
+        }
+        else
+        {
+            images.GetComponentsInChildren_Sorted(exclusionList, _obj);
+        }
+    }
+
+    public Color color
+    {
+        get
+        {
+            return images.color;
+        }
+        set
+        {
+            images.color = value;
+        }
+    }
+
+    public float Alpha
+    { 
+        get
+        {
+            return images.Alpha;
+        }
+
+        set
+        {
+            images.Alpha = value;
+        }
+    }
+
+    public bool none
+    {
+        get
+        {
+            return images.none;
+        }
+    }
+}
+
+
+
+/// <summary>
+/// 宣言されてる型をまとめて操作する
+/// </summary>
+[Serializable]
+public class UI_Image
+{
+    public List<Image> images;
+    public List<SpriteRenderer> sprites;
+    public List<TextMeshProUGUI> texts;
+
+    public void Initialize()
+    {
+        images = new List<Image>();
+        sprites = new List<SpriteRenderer>();
+        texts = new List<TextMeshProUGUI>();
+    }
+
+    public void Reset()
+    {
+        Initialize();
+    }
+
+
+    public void Add(Image _image)
+    {
+        images.Add(_image);
+    }
+
+    public void Add(SpriteRenderer _sprite)
+    {
+        sprites.Add(_sprite);
+    }
+
+    public void Add(TextMeshProUGUI _text)
+    {
+        texts.Add(_text);
+    }
+
+    public void GetComponents(GameObject _obj)
+    {
+        Reset();
+        _obj.GetComponents<Image>().ToList();
+        _obj.GetComponents<TextMeshProUGUI>().ToList();
+        _obj.GetComponents<SpriteRenderer>().ToList();
+    }
+
+    public void GetComponentsInChildren(GameObject _obj)
+    {
+        Reset();
+        _obj.GetComponentsInChildren<Image>().ToList();
+        _obj.GetComponentsInChildren<TextMeshProUGUI>().ToList();
+        _obj.GetComponentsInChildren<SpriteRenderer>().ToList();
+    }
+
+    public void GetComponents_Sorted(UI_Image _exclusionList, GameObject _obj)
+    {
+        Reset();
+        SortByExclusionList(_exclusionList,_obj.GetComponents<Image>().ToList());
+        SortByExclusionList(_exclusionList,_obj.GetComponents<TextMeshProUGUI>().ToList());
+        SortByExclusionList(_exclusionList,_obj.GetComponents<SpriteRenderer>().ToList());
+    }
+    public void GetComponentsInChildren_Sorted(UI_Image _exclusionList, GameObject _obj)
+    {
+        Reset();
+        SortByExclusionList(_exclusionList, _obj.GetComponentsInChildren<Image>().ToList());
+        SortByExclusionList(_exclusionList, _obj.GetComponentsInChildren<TextMeshProUGUI>().ToList());
+        SortByExclusionList(_exclusionList, _obj.GetComponentsInChildren<SpriteRenderer>().ToList());
+    }
+    /// <summary>
+    /// 後から整理する場合に使用
+    /// </summary>
+    public void SortByExclusionList(UI_Image _exclusionList)
+    {
+        for (int i = images.Count; i > 0; i--)
+        {
+            for (int j = 0; j < _exclusionList.images.Count; j++)
+            {
+                if (images[i] == _exclusionList.images[j])
+                {
+                    images.RemoveAt(i);
+                }
+            }
+        }
+
+
+        for (int i = sprites.Count; i > 0; i--)
+        {
+            for (int j = 0; j < _exclusionList.sprites.Count; j++)
+            {
+                if (sprites[i] == _exclusionList.sprites[j])
+                {
+                    sprites.RemoveAt(i);
+                }
+            }
+        }
+
+
+        for (int i = texts.Count; i > 0; i--)
+        {
+            for (int j = 0; j < _exclusionList.texts.Count; j++)
+            {
+                if (texts[i] == _exclusionList.texts[j])
+                {
+                    texts.RemoveAt(i);
+                }
+            }
+        }
+    }
+
+
+    public void SortByExclusionList(UI_Image _exclusionList, List<Image> _imageList)
+    {
+        for (int i = 0; i < _imageList.Count; i++)
+        {
+            bool add = true;
+            for (int j = 0; j < _exclusionList.images.Count; j++)
+            {
+                if (_imageList[i] == _exclusionList.images[j])
+                {
+                    add = false;
+                }
+
+            }
+
+            if (add == true)
+            {
+                Add(_imageList[i]);
+            }
+        }
+    }
+    public void SortByExclusionList(UI_Image _exclusionList, List<SpriteRenderer> _spriteList)
+    {
+        for (int i = 0; i < _spriteList.Count; i++)
+        {
+            bool add = true;
+            for (int j = 0; j < _exclusionList.sprites.Count; j++)
+            {
+                if (_spriteList[i] == _exclusionList.sprites[j])
+                {
+                    add = false;
+                }
+
+            }
+
+            if (add == true)
+            {
+                sprites.Add(_spriteList[i]);
+            }
+        }
+    }
+    public void SortByExclusionList(UI_Image _exclusionList, List<TextMeshProUGUI> _textList)
+    {
+        for (int i = 0; i < _textList.Count; i++)
+        {
+            bool add = true;
+            for (int j = 0; j < _exclusionList.texts.Count; j++)
+            {
+                if (_textList[i] == _exclusionList.texts[j])
+                {
+                    add = false;
+                }
+
+            }
+
+            if (add == true)
+            {
+                texts.Add(_textList[i]);
+            }
         }
     }
 
@@ -941,25 +1181,25 @@ public class SpriteOrImage
     {
         get
         {
-            if (sprites.Length != 0)
+            if (sprites.Count != 0)
             {
 
                 return sprites[0].color;
             }
-            else if (images.Length != 0)
+            else if (images.Count != 0)
             {
                 return images[0].color;
             }
-            else if (texts.Length != 0)
+            else if (texts.Count != 0)
             {
                 return texts[0].color;
             }
-            Debug.LogError("SpriteRendererまたはImageをアタッチしてください");
+            Debug.LogError("SpriteRenderer/Image/Textのいずれかをアタッチしてください");
             return Color.white;
         }
         set
         {
-            if (sprites.Length != 0)
+            if (sprites.Count != 0)
             {
                 foreach (SpriteRenderer sprite in sprites)
                 {
@@ -967,7 +1207,7 @@ public class SpriteOrImage
 
                 }
             }
-            else if (images.Length != 0)
+            else if (images.Count != 0)
             {
                 foreach (Image image in images)
                 {
@@ -975,7 +1215,7 @@ public class SpriteOrImage
                     image.color = value;
                 }
             }
-            else if (texts.Length != 0)
+            else if (texts.Count != 0)
             {
                 foreach (TextMeshProUGUI text in texts)
                 {
@@ -985,7 +1225,7 @@ public class SpriteOrImage
             }
             else
             {
-                Debug.LogError("SpriteRendererまたはImageをアタッチしてください");
+                Debug.LogError("SpriteRenderer/Image/Textのいずれかをアタッチしてください");
             }
         }
     }
@@ -994,67 +1234,95 @@ public class SpriteOrImage
     {
         get
         {
-            if (sprites.Length != 0)
+            if (texts.Count != 0)
+            {
+                return texts[0].color.a;
+            }
+            else if (sprites.Count != 0)
             {
 
                 return sprites[0].color.a;
             }
-            else if (images.Length != 0)
+            else if (images.Count != 0)
             {
                 return images[0].color.a;
             }
-            else if (texts.Length != 0)
-            {
-                return texts[0].color.a;
-            }
 
-            Debug.LogError("SpriteRendererまたはImageをアタッチしてください");
+            Debug.LogError("SpriteRenderer/Image/Textのいずれかをアタッチしてください");
             return 0.0f;
         }
         set
         {
-            if (sprites.Length != 0)
+            bool _noneImage = true;
+            if (sprites.Count != 0)
             {
                 foreach (SpriteRenderer sprite in sprites)
                 {
                     sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, value);
 
                 }
+                _noneImage = false;
             }
-            else if (images.Length != 0)
+            if (images.Count != 0)
             {
                 foreach (Image image in images)
                 {
 
                     image.color = new Color(image.color.r, image.color.g, image.color.b, value);
                 }
+                _noneImage = false;
             }
-            else if (texts.Length != 0)
+            if (texts.Count != 0)
             {
                 foreach (TextMeshProUGUI text in texts)
                 {
-
-                    text.color = new Color(text.color.r, text.color.g, text.color.b, value);
+                    text.alpha = value;
                 }
+                _noneImage = false;
             }
-            else
+
+            if (_noneImage == true)
             {
-                Debug.LogError("SpriteRendererまたはImageをアタッチしてください");
+                Debug.LogError("SpriteRenderer/Image/Textのいずれかをアタッチしてください");
             }
         }
     }
+
+    public bool none
+    { 
+        get
+        {
+            if(images.Count == 0)
+            {
+                if(sprites.Count == 0)
+                {
+                    if(texts.Count == 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+    }
+
+
+
 }
+
+
 [Serializable]
 public class EnableAndFadeAlpha
 {
 
-    [field: SerializeField] public SpriteOrImage img { get; set; } = new SpriteOrImage();
+    [field: SerializeField] public UI_ImageOperator img { get; set; } = new UI_ImageOperator();
     [SerializeField] private Interval displayInterval = new Interval(); // 消え始めるまでの時間
     [SerializeField] private Interval intervalToFade = new Interval();  // 完全に消えるまでの時間
 
     public void Initialize()
     {
-        img.Initialize();
+        img.Assign();
         displayInterval.Initialize(false, false);
         intervalToFade.Initialize(false, false);
         displayInterval.lowAction += intervalToFade.Reset;
@@ -1318,7 +1586,7 @@ public class AnimatorParameter
         aniParamList = _animator.parameters.ToList();
 
         List<GeneralMotion> stateList = new List<GeneralMotion>();
-        stateList = GetEnumList.Get<GeneralMotion>();
+        stateList = EnumOperator.Get<GeneralMotion>();
 
         // 宣言済みのAnimatorControllerParameterを初期化
         MotionState.type = AnimatorControllerParameterType.Int;
@@ -1372,35 +1640,191 @@ public class AnimatorParameter
 [Serializable]
 public class TextParameter
 {
+    public bool reverse;
     public TextMeshProUGUI text;
-    public string firstHalfText;
-    public string secondHalfText;
-    public string variableCenterText;
+    public string variableCenterText_Entity;
+    public string variableCenterText_Empty;
+    protected Parameter parameter = new Parameter();
 
-    [SerializeField] private ValueChecker<int> valueChecker;
-    public void Initialize(int _startValue)
+    protected ValueChecker<int> valueChecker;
+    public void Initialize(Parameter _startValue)
     {
         valueChecker = new ValueChecker<int>();
-        valueChecker.Initialize(_startValue);
-        valueChecker.changedAction += TextUpdate;
+        parameter = _startValue;
+        valueChecker.Initialize((int)parameter.entity);
+        valueChecker.changedAction += Event_TextUpdate;
 
-        TextUpdate();
+        Event_TextUpdate();
     }
-
     public void Update(int _numberOfVariable)
     {
         valueChecker.Update(_numberOfVariable);
     }
-
-    public void TextUpdate()
+    public virtual void Event_TextUpdate()
     {
+        text.text = AssignVariableCenterText;
+    }
 
-        string incrementalVariableText = "";
-        for (int i = 0; i < valueChecker.value; i++)
+    protected string AssignVariableCenterText
+    {
+        get
         {
-            incrementalVariableText += variableCenterText;
+            string incrementalVariableText = "";
+
+            if (reverse == false)
+            {
+                for (int i = 0; i < parameter.max; i++)
+                {
+                    if (i < parameter.entity)
+                    {
+                        incrementalVariableText += variableCenterText_Entity;
+                    }
+                    else
+                    {
+                        incrementalVariableText += variableCenterText_Empty;
+                    }
+                }
+
+                return incrementalVariableText;
+            }
+
+
+            // 反転して表示させる
+            for (int i = (int)parameter.max; i > 0; i--)
+            {
+                if (i <= parameter.entity)
+                {
+                    incrementalVariableText += variableCenterText_Entity;
+                }
+                else
+                {
+                    incrementalVariableText += variableCenterText_Empty;
+                }
+            }
+
+            return incrementalVariableText;
+
+        }
+    }
+}
+
+
+[Serializable]
+public class TextParameter_EncloseCenter : TextParameter
+{
+    public string firstHalfText;
+    public string secondHalfText;
+
+
+    public override void Event_TextUpdate()
+    {
+        string incrementalVariableText = "";
+        for (int i = 0; i < parameter.max; i++)
+        {
+            if(i < parameter.entity)
+            {
+                incrementalVariableText += variableCenterText_Entity;
+            }
+            else
+            {
+                incrementalVariableText += variableCenterText_Empty;
+            }
         }
 
         text.text = firstHalfText + incrementalVariableText + secondHalfText;
+    }
+}
+
+[Serializable]
+public class Image_IntParameter
+{
+    public Image entityImage;
+    public Image emptyImage;
+
+    public Parameter refferenceParameter;
+
+}
+
+/// <summary>
+/// 慣性維持クラス
+/// </summary>
+[Serializable]
+public class  Inertia
+{
+    [field: SerializeField, NonEditable] public bool active { get; private set; }
+    [field: SerializeField, NonEditable] public Vector3 velocity { get; private set; }
+    public Interval durationTime = new Interval();
+    public RatioCurve ratioCurve = new RatioCurve();
+
+    public void Initialize()
+    {
+        durationTime.Initialize(false, false, durationTime.interval);
+        ratioCurve.AssignProfile();
+    }
+
+    /// <summary>
+    /// 値渡しで初期化
+    /// </summary>
+    /// <param name=""></param>
+    public void Initialize_PassByValue(Inertia _inertia)
+    {
+        durationTime.Initialize(false, false, _inertia.durationTime.interval);
+        ratioCurve.AssignProfile();
+    }
+
+    public void Event_StartImpulse(Vector3 _velocity)
+    {
+        active = true;
+        velocity = _velocity;
+    }
+
+    /// <summary>
+    /// durationTime.intervalが0以下の場合、持続時間的に慣性を返す
+    /// </summary>
+    /// <returns></returns>
+    public Vector3 Evaluate()
+    {
+        if (active == false)
+        {
+            return Vector3.zero;
+        }
+
+
+
+        Vector3 returnVelocity = velocity;
+
+        // 常に同じ慣性で移動
+        if (durationTime.interval <= 0)
+        {
+            returnVelocity *= ratioCurve.Evaluate(1);
+            return returnVelocity;
+        }
+
+
+        durationTime.Update();
+        returnVelocity *= ratioCurve.Evaluate(durationTime.ratio);
+        return returnVelocity;
+    }
+
+    public void Reset()
+    {
+        durationTime.Reset();
+        velocity = Vector3.zero;
+    }
+
+    /// <summary>
+    /// durationTime.intervalが0以下なら
+    /// </summary>
+    public bool isInertiaDuration
+    {
+        get
+        {
+            if (durationTime.interval <= 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

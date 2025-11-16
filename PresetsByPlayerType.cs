@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using AddClass;
+using AddUnityClass;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif

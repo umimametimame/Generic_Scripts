@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using AddClass;
+using AddUnityClass;
 
 /// <summary>
 /// 各シーンに一つのみ配置<br/>
@@ -16,7 +16,7 @@ public class SceneEditor : MonoBehaviour
     protected virtual void Start()
     {
         SceneCheck();
-        canvas.Initialize();
+        canvas.Assign();
         canvas.Instance();
         SceneManager.sceneLoaded += SceneLoaded;
     }

@@ -1,8 +1,9 @@
-using AddClass;
+using AddUnityClass;
+using Fusion;
 using UnityEditor;
 using UnityEngine;
 
-public class AdulationTarget : MonoBehaviour
+public class AdulationTarget : NetworkBehaviour
 {
     private EditorUpdate editorUpdate;
     private void OnEnable()
@@ -31,7 +32,7 @@ public class AdulationTarget : MonoBehaviour
     [SerializeField] private Vector3 wToS;
     [SerializeField] private RectTransform thisRect;
     [SerializeField] private Vector2 screenPos;
-    private void Start()
+    public override void Spawned()
     {
         if (target == null) { return; }
 
@@ -52,7 +53,7 @@ public class AdulationTarget : MonoBehaviour
         
     }
 
-    private void Update()
+    public override void FixedUpdateNetwork()
     {
         if(adulationRatio <= 0)
         {
