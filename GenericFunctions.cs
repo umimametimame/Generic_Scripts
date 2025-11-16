@@ -1157,7 +1157,7 @@ namespace AddUnityClass
             max = _max;
         }
 
-        public void AssingEntityByMax()
+        public void AssingEntity_Max()
         {
             entity = max;
         }
