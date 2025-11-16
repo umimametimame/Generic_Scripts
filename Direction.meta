@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Direction.meta
 guid: e4645c030914e1a469491d8d08d8e98e
+========
+guid: 1e02431694645584db429d5501bf1341
+>>>>>>>> 4c03042fce52a9fb5bf6da0bca53bd01a66631d4:UI/ColorProfile.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
