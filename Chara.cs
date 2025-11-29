@@ -10,7 +10,7 @@ using UnityEditor;
 
 namespace GenericChara
 {
-    
+    [RequireComponent(typeof(Engine))]
     public class Chara : NetworkBehaviour
     {
         [field: SerializeField] public Parameter hp;
@@ -68,7 +68,7 @@ namespace GenericChara
         }
         public void AddMoveVelocity(Vector3 value)
         {
-            moveVelocity.plan += GetAssignedSpeedVelocity(value);
+            moveVelocity.plan += value;
         }
 
         /// <summary>
