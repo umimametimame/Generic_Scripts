@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class Param_Base : MonoBehaviour
 {
     private PlayerInput playerInput;
-    public Param_GamePadSticks sticks = new Param_GamePadSticks();
+    [NonEditable] public Param_GamePadSticks sticks = new Param_GamePadSticks();
 
 
     private void Start()

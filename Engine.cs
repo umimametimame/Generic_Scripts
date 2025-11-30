@@ -13,29 +13,21 @@ public class Engine : NetworkBehaviour
     [field: SerializeField, NonEditable] public Vector3 velocityPlan {  get; set; }
     [field: SerializeField, NonEditable] public Vector3 beforeVelocity { get; private set; }
     [field: SerializeField, NonEditable] public Quaternion rotatePlan { get; set; }
-    /// <summary>
-    /// velocityPlan���v�Z����֐���o�^����
-    /// </summary>
     public Action velocityPlanAction { get; set; }
-    public override void Spawned()
+    public virtual void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        gravityOperator.Initialize();
-        gravityActive = true;
-
-        velocityPlan = Vector3.zero;
-        PlanReset();
+        Initialize();
     }
 
-    public override void FixedUpdateNetwork()
+    public virtual void Update()
     {
         if (HasStateAuthority == false)
         {
             //Debug.LogWarning("Engine");
 
         }
-        PlanReset();
-        VelocitySolution();
+        Reset_Plan();
+        Update_Velocity();
         if (HasStateAuthority == false)
         {
             //Debug.LogWarning("Engine Finish");
@@ -43,42 +35,47 @@ public class Engine : NetworkBehaviour
         }
     }
 
+    public void Initialize()
+    {
+        rb = GetComponent<Rigidbody>();
+        gravityOperator.Initialize();
+        gravityActive = true;
+
+        velocityPlan = Vector3.zero;
+        Reset_Plan();
+
+    }
+
     public void SetGravity(GravityProfile gp)
     {
         gravityOperator.gravityProfile = gp;
     }
 
-    public void PlanReset()
+    public void Reset_Plan()
     {
         velocityPlan = Vector3.zero;
         rotatePlan = Quaternion.identity;
     }
 
     /// <summary>
-    /// velocityPlan��M��֐���o�^���A���̌�ړ�������
+    /// velocityPlanでRigidBodyを動かす
     /// </summary>
-    private Vector3 VelocitySolution()
+    /// <returns></returns>
+    private Vector3 Update_Velocity()
     {
         velocityPlanAction?.Invoke();
-        GravitySolution();
-        //rb.rotation = rotatePlan;
+        Update_Gravity();
         rb.linearVelocity = velocityPlan;
-        //if (velocityPlan != Vector3.zero)
-        //    Debug.LogWarning(velocityPlan);
 
         beforeVelocity = velocityPlan;
         return transform.position;
     }
 
 
-    private void GravitySolution()
+    private void Update_Gravity()
     {
         gravityOperator.Update();
         velocityPlan += gravityOperator.currentGravity.plan;
-        if (HasInputAuthority == true)
-        {
-            //Debug.Log(gravityOperator.currentGravity.plan);
-        }
     }
 
     public bool gravityActive
