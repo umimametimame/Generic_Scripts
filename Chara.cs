@@ -22,7 +22,7 @@ namespace GenericChara
         [SerializeField, NonEditable] protected Quaternion rotatePlan;
         [field: SerializeField, NonEditable] public Chara lastAttacker { get; protected set; }
 
-        public void Initialize()
+        public void Initialize_BaseChara()
         {
             engine = GetComponent<Engine>();
             engine.velocityPlanAction += AddVelocityPlan;

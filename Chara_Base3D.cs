@@ -5,10 +5,11 @@ using UnityEngine.InputSystem;
 public class Chara_Base3D : Chara
 {
     [SerializeField] Param_Base inputParam;
+    public Animator animator;
 
     private void Start()
     {
-        Initialize();
+        Initialize_BaseChara();
     }
 
     private void Update()
@@ -19,11 +20,12 @@ public class Chara_Base3D : Chara
     }
 
 
+
+
     public Vector3 MoveInputVelocity
     {
         get
         {
-            Debug.Log($"{inputParam.sticks.GetLeftStick}");
             Vector3 _ret = ConvertStickInputTo3D.GetMoveVelocity(inputParam.sticks.GetLeftStick);
             return _ret;
         }
@@ -36,6 +38,11 @@ public class Chara_Base3D : Chara
             Vector3 _ret = ConvertStickInputTo3D.GetLookVelocity(inputParam.sticks.GetRightStick);
             return _ret;
         }
+    }
+
+    protected void ChangeAnimation_SetInteger(string _paramName, int _value)
+    {
+        animator.SetInteger(_paramName, _value);
     }
 
 }
