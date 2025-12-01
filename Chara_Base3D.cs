@@ -9,6 +9,7 @@ public class Chara_Base3D : Chara
     private void Start()
     {
         Initialize();
+        Animation_Operator.GetAnimationClips(GetComponent<Animator>());
     }
 
     private void Update()
@@ -23,7 +24,6 @@ public class Chara_Base3D : Chara
     {
         get
         {
-            Debug.Log($"{inputParam.sticks.GetLeftStick}");
             Vector3 _ret = ConvertStickInputTo3D.GetMoveVelocity(inputParam.sticks.GetLeftStick);
             return _ret;
         }
