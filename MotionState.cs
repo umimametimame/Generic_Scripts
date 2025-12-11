@@ -30,28 +30,6 @@ public enum CutInType
 
 public static class Convert_MotionState
 {
-    /// <summary>
-    /// State‚ªŽó“®“I‚©
-    /// </summary>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    public static bool IsReserveState(GeneralMotion state)
-    {
-        switch (state)
-        {
-            case GeneralMotion.Idle:
-                return true;
-            case GeneralMotion.Fall:
-                return true;
-            //case GeneralMotion.Down:
-            //    return true;
-            case GeneralMotion.None:
-                return true;
-        }
-
-        return false;
-
-    }
 
     public static AnimatorCondition[] AssignCondition_Enum<T>(UnityEditor.Animations.AnimatorState _state, string _paramName) where T : Enum
     {
