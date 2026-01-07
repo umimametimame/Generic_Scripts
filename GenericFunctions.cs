@@ -114,8 +114,73 @@ namespace AddUnityClass
             return list;
         }
 
+        /// <summary>
+        /// ‘O•û‚Ì“àÏ
+        /// </summary>
+        /// <param name="_base"></param>
+        /// <param name="_target"></param>
+        /// <returns></returns>
+        public static bool GetForwardDot(Transform _base, Transform _target)
+        {
+            bool _ret = false;
+
+            Vector3 _baseToTarget = _target.position - _base.position;
+            Vector3 _nor = _baseToTarget.normalized;
+            float _dot = Vector3.Dot(_base.forward, _nor);
+
+            if (_dot > 0)
+            {
+                _ret = true;
+            }
+            else if (_dot < 0)
+            {
+                _ret = false;
+            }
 
 
+            return _ret;
+        }
+
+        public static bool GetUpDot(Transform _base, Transform _target)
+        {
+            bool _ret = false;
+
+            Vector3 _baseToTarget = _target.position - _base.position;
+            Vector3 _nor = _baseToTarget.normalized;
+            float _dot = Vector3.Dot(_base.up, _nor);
+
+            if (_dot > 0)
+            {
+                _ret = true;
+            }
+            else if (_dot < 0)
+            {
+                _ret = false;
+            }
+
+
+            return _ret;
+        }
+        public static bool GetRightDot(Transform _base, Transform _target)
+        {
+            bool _ret = false;
+
+            Vector3 _baseToTarget = _target.position - _base.position;
+            Vector3 _nor = _baseToTarget.normalized;
+            float _dot = Vector3.Dot(_base.right, _nor);
+
+            if (_dot > 0)
+            {
+                _ret = true;
+            }
+            else if (_dot < 0)
+            {
+                _ret = false;
+            }
+
+
+            return _ret;
+        }
 
         /// <summary>
         /// angle‚ğw’è‚µ‚½Šp“x‚ÉŠÛ‚ß‚é

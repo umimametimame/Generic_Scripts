@@ -71,79 +71,52 @@ public class TransitionalMotionThreshold
     }
 }
 
-[Serializable] public class MotionState
+/// <summary>
+/// モーション単位
+/// <br/>継承先で処理記載
+/// </summary>
+[Serializable]
+public class MotionState_Base
 {
+    [field: SerializeField, NonEditable] public MotionType motionType { get; private set; }
     [field: SerializeField, NonEditable] public GeneralMotion state { get; protected set; }
-    [field: SerializeField, NonEditable] public List<TransitionalMotionThreshold> transitionalPeriod { get; set; }
-    [field: SerializeField, NonEditable] public List<Range> actionByTimeRange { get; set; } = new List<Range>();
+    [field: SerializeField, NonEditable] public bool enable;
     /// <summary>
-    /// intervalが負の場合持続系モーション
+    /// モーション時間と現在地
     /// </summary>
-    [field: SerializeField, NonEditable] public Interval currentMotionTime { get; set; }
-    [field: SerializeField, NonEditable] public Exist exist { get; set; } = new Exist();
-    public Action cutIn { get; set; }
-    [field: SerializeField] public MotionStateProfile profile { get; set; }
+    [field: SerializeField, NonEditable] public Interval motionTime { get; private set; }
     public CutInType cutInType;
+    public Life exist { get; private set; } = new Life();
+    [field: SerializeField, NonEditable] public List<TransitionalMotionThreshold> transitionalPeriod { get; set; }
+    [field: SerializeField] public MotionStateProfile profile { get; set; }
 
-    [SerializeField] protected List<Instancer> effectInstancer = new List<Instancer>();
-    public virtual void Initialize()
+    public void Initialize_Base()
     {
-        exist.enable += Enable_Exist;
-        startAction += ResetAction;
-        finishAction += ResetAction;
-        cutIn += ResetAction;
-
-        currentMotionTime.Initialize(false, true, 0.0f);
         AssignProfile();
+        exist.Initialize();
+        exist.start += Reset;
+        exist.enable += motionTime.Update;
+        motionTime.reachAction += exist.Finish;
+    }
 
-        if(IsDuration == true)
+    private void UpdateTransitionList()
+    {
+        for (int i = 0; i < transitionalPeriod.Count; ++i)
         {
-
+            transitionalPeriod[i].thresholdRatio.Update(motionTime.Ratio);
         }
-        else
-        {
-            currentMotionTime.activeAction += exist.Disable;
-        }
-        exist.disable += Reset;
     }
 
-    public void Update()
-    { 
-        currentMotionTime.Update();
-        exist.Update();
-    }
-    public void Start()
+    private void Reset()
     {
-        exist.Start();
-    }
-    public void Disable()
-    {
-        exist.Disable();
-    }
+        motionTime.Reset();
 
-    public void Reset()
-    {
-        currentMotionTime.Reset();
     }
 
     /// <summary>
-    /// モーションに設定されたタイミングで関数を実行
+    /// 経過時間毎の処理
     /// </summary>
-    void Enable_Exist()
-    {
-
-        for (int i = 0; i < actionByTimeRange.Count; i++)
-        {
-            actionByTimeRange[i].Update(currentMotionTime.ratio);
-        }
-    }
-    void ResetAction()
-    {
-        for (int i = 0; i < actionByTimeRange.Count; i++)
-        {
-            actionByTimeRange[i].Reset();
-        }
-    }
+    [field: SerializeField, NonEditable] public List<Range> actionByTimeRange { get; set; } = new List<Range>();
 
     public void AssignProfile(MotionStateProfile newProfile = null)
     {
@@ -165,10 +138,9 @@ public class TransitionalMotionThreshold
             else
             {
                 TransitionalMotionThreshold add = new TransitionalMotionThreshold();
-                
-                
+
+
                 transitionalPeriod = profile.GetTransitionalList;
-                effectInstancer = profile.effectInstancers;
                 actionByTimeRange = new List<Range>();
                 for (int i = 0; i < profile.rangeBool.Count; ++i)
                 {
@@ -177,14 +149,33 @@ public class TransitionalMotionThreshold
                     actionByTimeRange.Add(newRange);
                 }
             }
-            currentMotionTime.interval = profile.motionTime;
+
+
+            switch (profile.motionType)
+            {
+                case MotionType.Duration:
+                    {
+                        motionTime.Initialize(false, false, -1.0f);
+                    }
+                    break;
+
+                case MotionType.Rigor:
+                    {
+                        motionTime.Initialize(false, true, profile.motionTime);
+                        motionTime.reachAction += exist.Finish;
+                    }
+                break;
+            }
+
+
+
         }
     }
     private void ConvertTransitionalList()
     {
         List<GeneralMotion> states = ConvertEnums<GeneralMotion>.GetList();
         transitionalPeriod = new List<TransitionalMotionThreshold>();
-        
+
         TransitionalMotionThreshold newTransitional = new TransitionalMotionThreshold();
         switch (cutInType)
         {
@@ -228,57 +219,44 @@ public class TransitionalMotionThreshold
                 }
                 break;
         }
-        
-    }
-    #region Existプロパティ
-    public Action startAction
-    {
-        get { return exist.start; }
-        set { exist.start = value; }
-    }
 
-    public Action enableAction
-    {
-        get { return exist.enable; }
-        set { exist.enable = value; }
     }
-    public Action finishAction
+    public void Update()
     {
-        get { return currentMotionTime.reachAction; }
-        set { currentMotionTime.reachAction = value; }
-    }
-    public Action disableAction
-    {
-        get { return exist.disable; }
-        set { exist.disable = value; }
-    }
-
-    #endregion
-
-    /// <summary>
-    /// モーション時間が負ならtrue
-    /// </summary>
-    public bool IsDuration
-    {
-        get
+        if (enable == true)
         {
-            if(currentMotionTime.interval <= 0)
-            {
-                return true;
-            }
-
-            return false;
+            exist.Enable();
         }
+        else
+        {
+            exist.Disable();
+        }
+        exist.Update();
+        UpdateTransitionList();
     }
 }
+
+
+public enum MotionType
+{
+    /// <summary>
+    /// ループ可能モーション
+    /// </summary>
+    Duration,
+    /// <summary>
+    /// 時限モーション
+    /// </summary>
+    Rigor,
+}
+
 public static class ConvertEnums<T1> where T1 : Enum
 {
-    public static Dictionary<T1, MotionState> GetDic()
+    public static Dictionary<T1, MotionState_Base> GetDic()
     {
-        Dictionary<T1, MotionState> newDic = new Dictionary<T1, MotionState>();
+        Dictionary<T1, MotionState_Base> newDic = new Dictionary<T1, MotionState_Base>();
         foreach (T1 s in Enum.GetValues(typeof(T1)))
         {
-            newDic.Add(s, new MotionState());
+            newDic.Add(s, new MotionState_Base());
         }
 
         return newDic;

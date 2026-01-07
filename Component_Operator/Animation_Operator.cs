@@ -7,18 +7,37 @@ using UnityEngine;
 
 public class Animation_Operator : MonoBehaviour
 {
-    public Animator _animator;
+    private Animator animator;
+    [field: NonEditable] public int currentAnimationState = -1;
+    private ValueChecker<int> animationStateChecker = new ValueChecker<int>();
     public static string AnimationStateIdx = nameof(AnimationStateIdx);
+
+    private void Awake()
+    {
+        animationStateChecker.changedAction += ChangeAnimation_SetInteger;
+    }
     private void Start()
     {
-        _animator = GetComponent<Animator>();
+        animator = GetComponent<Animator>();
         AssignConditions_Enum();
     }
 
+    private void Update()
+    {
+        animationStateChecker.Update(currentAnimationState);
+    }
+
+    /// <summary>
+    /// currentAnimationStateÇ©ÇÁAnimationÇçƒê∂Ç∑ÇÈ
+    /// </summary>
+    public void ChangeAnimation_SetInteger()
+    {
+        animator.SetInteger(AnimationStateIdx, currentAnimationState);
+    }
     [ContextMenu(nameof(AssignConditions_Enum))]
     public void AssignConditions_Enum()
     {
-        AnimatorController controller = (AnimatorController)_animator.runtimeAnimatorController;
+        AnimatorController controller = (AnimatorController)animator.runtimeAnimatorController;
         List<AnimatorControllerLayer> _layers = controller.layers.ToList();
 
 
@@ -28,12 +47,9 @@ public class Animation_Operator : MonoBehaviour
             {
                 AnimatorStateMachine _childStates = _layers[i].stateMachine;
                 UnityEditor.Animations.AnimatorState _state = new AnimatorState();
-                Debug.Log(_layers[i].name);
-                Debug.Log(_childStates.anyStateTransitions.Length);
 
                 foreach (AnimatorStateTransition _tra in _childStates.anyStateTransitions)
                 {
-                    Debug.Log($"{_tra.name} + {_tra.destinationState}");
                     _tra.conditions = Convert_MotionState.AssignCondition_Enum<GeneralMotion>(_tra.destinationState, AnimationStateIdx);
                     _tra.hasExitTime = false;
                 }
@@ -47,7 +63,7 @@ public class Animation_Operator : MonoBehaviour
     /// <returns></returns>
     private bool CheckExistenceStateParam()
     {
-        List<AnimatorControllerParameter> _parameters = _animator.parameters.ToList();
+        List<AnimatorControllerParameter> _parameters = animator.parameters.ToList();
         bool _existence = false;
 
         for (int i = 0; i < _parameters.Count; ++i)
@@ -67,4 +83,6 @@ public class Animation_Operator : MonoBehaviour
 
         return _existence;
     }
+
+
 }

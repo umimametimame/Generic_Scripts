@@ -19,7 +19,7 @@ using UnityEngine;
     }
     public void Update()
     {
-        enable = (!input.reaching);
+        enable = (!input.Reaching);
         if(enable == true)
         {
             if (funcs.Invoke() == true)
@@ -38,7 +38,7 @@ using UnityEngine;
     {
         get
         {
-            if(!input.reaching == true)
+            if(!input.Reaching == true)
             {
                 if (funcs.Invoke() == true)
                 {

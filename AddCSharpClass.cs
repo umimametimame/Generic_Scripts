@@ -312,6 +312,27 @@ public class MinMax
 }
 
 
+[Serializable]
+public class EnumInt<T> where T : Enum
+{
+    [field: SerializeField, NonEditable] public T enumValue {  get; set; }
+    public int intValue
+    {
+        get
+        {
+            int _ret = Convert.ToInt32(enumValue);
+
+            return _ret;
+        }
+
+        set
+        {
+            enumValue = (T)Enum.ToObject(typeof(T), value);
+        }
+    }
+
+
+}
 
 public static class EnumOperator
 {

@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[CreateAssetMenu(fileName = "MotionStateProfile", menuName = "ScriptableObject/Rakuin_MotionStateProfile")]
+[CreateAssetMenu(fileName = "MotionStateProfile", menuName = "ScriptableObject/MotionStateProfile")]
 public class MotionStateProfile : ScriptableObject
 {
+
+    [field: SerializeField] public MotionType motionType { get; private set; }
     [field: SerializeField] public GeneralMotion state { get; private set; }
     /// <summary>
     /// Ç±ÇÃÉÇÅ[ÉVÉáÉìÇ™Ç«Ç§Ç‚Ç¡ÇƒäÑÇËçûÇﬁÇ©
@@ -15,7 +17,6 @@ public class MotionStateProfile : ScriptableObject
     [field: SerializeField] public Inertia inertia_ { get; private set; } = new Inertia();
     [field: SerializeField] public MotionStateProfile_Inertia inertia { get; private set; } = new MotionStateProfile_Inertia();
     [field: SerializeField] public List<MinMax> rangeBool { get; private set; }
-    [field: SerializeField] public List<Instancer> effectInstancers { get; private set; }
     [field: SerializeField] public List<TransitionalProfile_List> motionStateValueList { get; private set; } = new List<TransitionalProfile_List>();
     [field: SerializeField] public float motionTime { get; private set; }
 

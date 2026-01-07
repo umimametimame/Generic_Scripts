@@ -135,7 +135,7 @@ public class TransformOffset
     }
 }
 
-public enum ExistState
+public enum LifeState
 {
     Disable,
     Start,
@@ -143,65 +143,111 @@ public enum ExistState
     Finish,
 }
 
+/// <summary>
+/// 開始時と終了時がある2値クラス
+/// </summary>
 [Serializable]
-public class Exist
+public class Life
 {
-    [field: SerializeField, NonEditable] public ExistState state { get; private set; } = ExistState.Disable;
+    [field: SerializeField, NonEditable] public LifeState state { get; private set; } = LifeState.Disable;
+    private LifeState beforeState;
     [field: SerializeField] public Action start { get; set; }
     [field: SerializeField] public Action enable { get; set; }
     [field: SerializeField] public Action finish { get; set; }
     [field: SerializeField] public Action disable { get; set; }
-
-
     [field: SerializeField, NonEditable] public bool oneShot { get; private set; }
 
     public void Initialize(bool started = false)
     {
         this.oneShot = started;
-        state = ExistState.Disable;
+        state = LifeState.Disable;
+        beforeState = state;
     }
 
-    public void Reset()
-    {
-        state = ExistState.Disable;
-    }
 
     public void Update()
     {
         switch (state)
         {
 
-            case ExistState.Start:
-                state = ExistState.Enable;
+            case LifeState.Start:
+                state = LifeState.Enable;
                 start?.Invoke();
             break;
-            case ExistState.Finish:
+            case LifeState.Finish:
                 finish?.Invoke();
-                state = ExistState.Disable;
+                state = LifeState.Disable;
             break;
         }
 
         switch(state)
         {
-            case ExistState.Enable:
+            case LifeState.Enable:
                 enable?.Invoke();
             break;
-            case ExistState.Disable:
+            case LifeState.Disable:
                 disable?.Invoke();
             break;
         }
+
+        beforeState = state;
     }
 
-    public void Disable()
-    {
-        state = ExistState.Disable;
-    }
 
     public void Start()
     {
-        state = ExistState.Start;
+        state = LifeState.Start;
     }
 
+    public void Enable()
+    {
+        if (beforeState != LifeState.Enable)
+        {
+            Start();
+        }
+        else
+        {
+            state = LifeState.Enable;
+        }
+    }
+
+    public void Finish()
+    {
+        state = LifeState.Finish;
+    }
+    public void Disable()
+    {
+        if (beforeState != LifeState.Disable)
+        {
+            Finish();
+        }
+        else
+        {
+            state = LifeState.Disable;
+        }
+    }
+
+    /// <summary>
+    /// 有効側かどうか
+    /// </summary>
+    public bool IsEnable
+    {
+        get
+        {
+            bool _ret = false;
+            if (state == LifeState.Start)
+            {
+                _ret = true;
+            }
+            else if (state == LifeState.Enable)
+            {
+                _ret = true;
+            }
+
+            return _ret;
+
+        }
+    }
 
     /// <summary>
     /// 一度のみ
@@ -210,17 +256,13 @@ public class Exist
     {
         if (oneShot == false)
         {
-            state = ExistState.Start;
+            state = LifeState.Start;
             oneShot = true;
         }
     }
     public void OneShotReset()
     {
         oneShot = false;
-    }
-    public void Finish()
-    {
-        state = ExistState.Finish;
     }
 }
 
@@ -250,6 +292,7 @@ public class MomentumPhase
     {
         active = false;
     }
+
 
     public void Update()
     {
@@ -457,11 +500,8 @@ public class Traffic
 [Serializable]
 public class Interval
 {
-    [field: SerializeField, NonEditable] public bool reaching { get; private set; }
-    [field: SerializeField, NonEditable] public bool reachedImpact { get; private set; }
     public float interval;
     [field: SerializeField, NonEditable] public VariedTime time { get; private set; } = new VariedTime();
-    [field: SerializeField, NonEditable] public float ratio { get; private set; }
     private bool autoReset;
     private bool reached;
     public Action reachAction { get; set; }
@@ -492,16 +532,7 @@ public class Interval
             time.Initialize();
         }
 
-        if(time.value >= _interval)
-        {
-            reaching = true;
-        }
-        else
-        {
-            reaching = false;
-        }
         reached = false;
-        RatioUpdate();
     }
 
     public void Initialize(bool _start, bool _autoReset)
@@ -512,9 +543,8 @@ public class Interval
     public void Update(float manualValue = 0.0f)
     {
         time.Update(manualValue);
-        RatioUpdate();
 
-        if (time.value >= interval)
+        if (Reaching == true)
         {
             if (reached == false)
             {
@@ -522,13 +552,11 @@ public class Interval
                 reachAction?.Invoke();
             }
 
-            reaching = true;
             activeAction?.Invoke();
             if (autoReset == true) { Reset(); }
         }
         else
         {
-            reaching = false;
             lowAction?.Invoke();
         }
     }
@@ -536,9 +564,8 @@ public class Interval
     public void Update()
     {
         time.Update();
-        RatioUpdate();
 
-        if (time.value >= interval)
+        if (Reaching == true)
         {
             if (reached == false)
             {
@@ -546,13 +573,11 @@ public class Interval
                 reachAction?.Invoke();
             }
 
-            reaching = true;
             activeAction?.Invoke();
             if (autoReset == true) { Reset(); }
         }
         else
         {
-            reaching = false;
             lowAction?.Invoke();
         }
     }
@@ -563,9 +588,7 @@ public class Interval
     public void Reset()
     {
         time.Initialize();
-        reaching = (time.value >= interval) ? true : false;
         reached = false;
-        RatioUpdate();
     }
 
     /// <summary>
@@ -574,26 +597,54 @@ public class Interval
     public void Reset(float _value)
     {
         time.Initialize(_value);
-        reaching = (time.value >= interval) ? true : false;
         reached = false;
-        RatioUpdate();
     }
     public void Increse(float value)
     {
         time.Increse(value);
     }
 
-    private void RatioUpdate()
+    public float Ratio
     {
-        if (interval <= 0.0f)
+        get
         {
-            ratio = 0;
-        }
-        else
-        {
-            ratio = time.value / interval;
+            float _ret = 0.0f;
+
+            if (interval <= 0.0f)
+            {
+                _ret = 0;
+            }
+            else
+            {
+                _ret = time.value / interval;
+            }
+
+            return _ret;
         }
 
+    }
+
+    public bool Reaching
+    {
+        get
+        {
+            bool _ret = false;
+            if (interval < 0.0f)
+            {
+                _ret = false;
+            }
+            else if (time.value >= interval)
+            {
+                _ret = true;
+            }
+            else if(time.value < interval)
+            {
+                _ret = false;
+            }
+
+            return _ret;
+
+        }
     }
 
 }
@@ -604,7 +655,6 @@ public class Interval
 [Serializable]
 public class Range
 {
-    [field: SerializeField, NonEditable] public bool isReaching { get; private set; }
     private bool beforeBool;
 
     [field: SerializeField] public MinMax thresholdRange { get; private set; } = new MinMax();
@@ -643,18 +693,8 @@ public class Range
     {
         currentValue = value;
 
-        // 範囲内なら
-        if (thresholdRange.min <= currentValue && currentValue <= thresholdRange.max)
-        { 
-            isReaching = true; 
-        }
-        else 
-        { 
-            isReaching = false; 
-        }
 
-
-        if (isReaching == true)        // 範囲内で
+        if (IsReaching == true)        // 範囲内で
         {
             if (beforeBool == false)    // 入った瞬間なら
             {
@@ -667,18 +707,18 @@ public class Range
 
         if (beforeBool == true)      // 前回範囲内で
         {
-            if (isReaching == false)  // 出る瞬間なら
+            if (IsReaching == false)  // 出る瞬間なら
             {
                 exitRangeAction.Invoke();
             }
         }
 
-        if (isReaching == false)   // 範囲外なら
+        if (IsReaching == false)   // 範囲外なら
         {
             outOfRangeAction?.Invoke();
         }
 
-        beforeBool = isReaching;
+        beforeBool = IsReaching;
     }
 
     public bool IsReaching
@@ -749,7 +789,7 @@ public class Easing
     {
         get
         {
-            return curve.Evaluate(time.ratio);
+            return curve.Evaluate(time.Ratio);
         }
     }
 }
@@ -844,7 +884,7 @@ public class Shake
 
     public void Update()
     {
-        if (interval.reaching == true)
+        if (interval.Reaching == true)
         {
         }
         interval.Update();
@@ -1352,7 +1392,7 @@ public class EnableAndFadeAlpha
 
     public void Fade()
     {
-        img.Alpha = 1.0f - intervalToFade.ratio;
+        img.Alpha = 1.0f - intervalToFade.Ratio;
     }
 
     public GameObject obj
@@ -1753,7 +1793,14 @@ public class  Inertia
 {
     [field: SerializeField, NonEditable] public bool active { get; private set; }
     [field: SerializeField, NonEditable] public Vector3 velocity { get; private set; }
+    /// <summary>
+    /// 慣性を引き継ぐ時間
+    /// <br/>0未満の場合、
+    /// </summary>
     public Interval durationTime = new Interval();
+    /// <summary>
+    /// 慣性を引き継ぐ割合
+    /// </summary>
     public RatioCurve ratioCurve = new RatioCurve();
 
     public void Initialize()
@@ -1763,47 +1810,47 @@ public class  Inertia
     }
 
     /// <summary>
-    /// 値渡しで初期化
+    /// 直前の慣性を引数にいれて演算開始
     /// </summary>
-    /// <param name=""></param>
-    public void Initialize_PassByValue(Inertia _inertia)
-    {
-        durationTime.Initialize(false, false, _inertia.durationTime.interval);
-        ratioCurve.AssignProfile();
-    }
-
+    /// <param name="_velocity"></param>
     public void Event_StartImpulse(Vector3 _velocity)
     {
         active = true;
         velocity = _velocity;
+        durationTime.Reset();
     }
 
     /// <summary>
     /// durationTime.intervalが0以下の場合、持続時間的に慣性を返す
     /// </summary>
     /// <returns></returns>
-    public Vector3 Evaluate()
+    public Vector3 GetEvaluate
     {
-        if (active == false)
+        get
         {
-            return Vector3.zero;
-        }
+            if (active == false)
+            {
+                return Vector3.zero;
+            }
 
 
 
-        Vector3 returnVelocity = velocity;
+            Vector3 returnVelocity = velocity;
 
-        // 常に同じ慣性で移動
-        if (durationTime.interval <= 0)
-        {
-            returnVelocity *= ratioCurve.Evaluate(1);
+            // 常に同じ慣性で移動
+            if (IsInertiaDuration == true)
+            {
+                returnVelocity *= ratioCurve.Evaluate(1);
+            }
+            else
+            {
+                durationTime.Update();
+                returnVelocity *= ratioCurve.Evaluate(durationTime.Ratio);
+            }
+
+
             return returnVelocity;
         }
-
-
-        durationTime.Update();
-        returnVelocity *= ratioCurve.Evaluate(durationTime.ratio);
-        return returnVelocity;
     }
 
     public void Reset()
@@ -1815,7 +1862,7 @@ public class  Inertia
     /// <summary>
     /// durationTime.intervalが0以下なら
     /// </summary>
-    public bool isInertiaDuration
+    public bool IsInertiaDuration
     {
         get
         {

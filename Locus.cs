@@ -137,7 +137,7 @@ public class Locus : ScriptableObject
 
     private void EnableAction()
     {
-        motionLocus.Update(motionTime.ratio);
+        motionLocus.Update(motionTime.Ratio);
         motionTime.Update();
     }
 

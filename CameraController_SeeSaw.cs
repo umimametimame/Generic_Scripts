@@ -2,22 +2,29 @@ using AddUnityClass;
 using Fusion;
 using UnityEngine;
 
-public class TPSViewPoint : NetworkBehaviour
+public class CameraController_SeeSaw : NetworkBehaviour
 {
     [field: SerializeField] public Camera cam { get; set; }
+    /// <summary>
+    /// 操作感度
+    /// <br/>推奨3
+    /// </summary>
     [SerializeField] private float sensitivity;
     [field: SerializeField, NonEditable] public EntityAndPlan<Vector2> inputViewPoint { get; set; }
-    [field: SerializeField, NonEditable] public Vector3 viewPointPosPlan { get; set; }
-    [SerializeField, NonEditable] private Vector3 beforePlan;
-
+    /// <summary>
+    /// カメラが注視するオブジェクト
+    /// </summary>
     [SerializeField] private Transform viewPointObject;
-    [SerializeField] private VecRangeOperator vertical;
+    [SerializeField] private VecRangeOperator angleLimit;
     [SerializeField] private Transform seesaw;
 
-    public override void Spawned()
+    private void Awake()
     {
-        AssignFusion();
-        vertical.AssignProfile();
+        Initialize();
+    }
+    public void Initialize()
+    {
+        angleLimit.AssignProfile();
         Reset();
     }
     public void AssignFusion()
@@ -48,14 +55,18 @@ public class TPSViewPoint : NetworkBehaviour
     }
     private void Update()
     {
+        if (sensitivity <= 0.0f)
+        {
+            Debug.LogError($"{this.GetType()}のsensitivityが0以下です");
+        }
+        UpdateAngleLimit();
+        cam.transform.LookAt(viewPointObject);
     }
     public override void FixedUpdateNetwork()
     {
-        SeeSawController();
-        cam.transform.LookAt(viewPointObject);
     }
 
-    public void SeeSawController()
+    public void UpdateAngleLimit()
     {
         Vector3 newSeesawEuler = seesaw.localEulerAngles;
         newSeesawEuler.y += inputViewPoint.plan.x * sensitivity;
@@ -63,14 +74,11 @@ public class TPSViewPoint : NetworkBehaviour
         newSeesawEuler.x = AddFunction.GetNormalizedAngle(newSeesawEuler.x, -180, 180);
 
 
-        newSeesawEuler = vertical.Update(newSeesawEuler);
+        newSeesawEuler = angleLimit.Update(newSeesawEuler);
         seesaw.localEulerAngles = newSeesawEuler;
 
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
     public void InputZeroAssign()
     {
         inputViewPoint.PlanDefault();

@@ -3,7 +3,7 @@ using Fusion;
 using UnityEditor;
 using UnityEngine;
 
-public class AdulationTarget : NetworkBehaviour
+public class AdulationTarget : MonoBehaviour
 {
     private EditorUpdate editorUpdate;
     private void OnEnable()
@@ -32,11 +32,20 @@ public class AdulationTarget : NetworkBehaviour
     [SerializeField] private Vector3 wToS;
     [SerializeField] private RectTransform thisRect;
     [SerializeField] private Vector2 screenPos;
-    public override void Spawned()
+    private Rigidbody rigidBody;
+
+    private void Start()
+    {
+        Initialize();
+    }
+
+    public void Initialize()
     {
         if (target == null) { return; }
 
         thisRect = GetComponent<RectTransform>();
+        rigidBody = GetComponent<Rigidbody>();
+
         switch (adulationType)
         {
             case AdulationType.World:
@@ -53,7 +62,7 @@ public class AdulationTarget : NetworkBehaviour
         
     }
 
-    public override void FixedUpdateNetwork()
+    public void FixedUpdate()
     {
         if(adulationRatio <= 0)
         {
@@ -71,25 +80,36 @@ public class AdulationTarget : NetworkBehaviour
         switch (adulationType)
         {
             case AdulationType.World:
-                adulation = gameObject.transform.position + (target.transform.position + adjustPos - gameObject.transform.position) * adulationRatio;
-                gameObject.transform.position = adulation;
+                {
+                    if (rigidBody != null)
+                    {
+                        adulation = rigidBody.position + (target.transform.position + adjustPos - gameObject.transform.position) * adulationRatio;
+                        rigidBody.position = adulation;
+                    }
+                    else
+                    {
+                        adulation = gameObject.transform.position + (target.transform.position + adjustPos - gameObject.transform.position) * adulationRatio;
+                        gameObject.transform.position = adulation;
+                    }
 
-                Quaternion newRotation = gameObject.transform.rotation;
-                if (rotation.x)
-                {
-                    newRotation.x = target.transform.rotation.x;
-                }
-                if (rotation.y)
-                {
-                    newRotation.y = target.transform.rotation.y;
-                }
-                if (rotation.z)
-                {
-                    newRotation.z = target.transform.rotation.z;
-                }
+                    Quaternion newRotation = gameObject.transform.rotation;
+                    if (rotation.x)
+                    {
+                        newRotation.x = target.transform.rotation.x;
+                    }
+                    if (rotation.y)
+                    {
+                        newRotation.y = target.transform.rotation.y;
+                    }
+                    if (rotation.z)
+                    {
+                        newRotation.z = target.transform.rotation.z;
+                    }
 
-                gameObject.transform.rotation = newRotation;
+                    gameObject.transform.rotation = newRotation;
+                }
                 break;
+
 
             case AdulationType.Screen:
 

@@ -1,60 +1,60 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
 
 /// <summary>
-/// 別のオブジェクトにアタッチされたコライダーで関数を実行できる
+/// 別のオブジェクトにアタッチされたコライダーで関数を実行する
 /// </summary>
 public class ColliderChecker : MonoBehaviour
 {
-    [field: SerializeField] public Collider thisCollider;
-    [field: SerializeField] public UnityEvent<Collider> triggerEnterEvent;
-    [field: SerializeField] public UnityEvent<Collider> triggerStayEvent;
-    [field: SerializeField] public UnityEvent<Collider> triggerExitEvent;
+    public Collider thisCollider;
+    [field: SerializeField] public Action<Collider> onTiggerEnterEvent;
+    [field: SerializeField] public Action<Collider> onTriggerStayEvent;
+    [field: SerializeField] public Action<Collider> onTriggerExitEvent;
 
 
-    /// <summary>
-    /// Collisionを引数にする場合、RigidbodyがColliderと同じ場所に必要
-    /// </summary>
-    [field: SerializeField] public UnityEvent<Collision> collisionEnterEvent;
-    [field: SerializeField] public UnityEvent<Collision> collisionStayEvent;
-    [field: SerializeField] public UnityEvent<Collision> collisionExitEvent;
+    [field: SerializeField] public Action<Collision> onCollisionEnterEvent;
+    [field: SerializeField] public Action<Collision> onCollisionStayEvent;
+    [field: SerializeField] public Action<Collision> onCollisionExitEvent;
+
+    private void Start()
+    {
+    }
     private void OnTriggerEnter(Collider other)
     {
-        if (thisCollider.isTrigger == false) { return; }
-        triggerEnterEvent.Invoke(other); 
+        onTiggerEnterEvent?.Invoke(other); 
         
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (thisCollider.isTrigger == false) { return; }
-        triggerStayEvent.Invoke(other);
+        onTriggerStayEvent?.Invoke(other);
     }
 
     private void OnTriggerExit(Collider other)
     {
-
-        if (thisCollider.isTrigger == false) { return; }
-        triggerExitEvent.Invoke(other);
+        onTriggerExitEvent?.Invoke(other);
     }
+
     private void OnCollisionEnter(Collision other)
     {
-        if (thisCollider.isTrigger == true) { return; }
-        collisionEnterEvent.Invoke(other);
+        Debug.LogWarning($"OnEnter{transform.name} {other.transform.name}");
+        onCollisionEnterEvent?.Invoke(other);
     }
 
     private void OnCollisionStay(Collision other)
     {
-        if (thisCollider.isTrigger == true) { return; }
-        collisionStayEvent.Invoke(other);
+        Debug.LogWarning($"OnStay{transform.name} {other.transform.name}");
+        onCollisionStayEvent?.Invoke(other);
 
     }
 
     private void OnCollisionExit(Collision other)
     {
 
-        if (thisCollider.isTrigger == true) { return; }
-        collisionExitEvent.Invoke(other);
+        onCollisionExitEvent?.Invoke(other);
     }
+
 }
