@@ -120,13 +120,13 @@ namespace AddUnityClass
         /// <param name="_base"></param>
         /// <param name="_target"></param>
         /// <returns></returns>
-        public static bool GetForwardDot(Transform _base, Transform _target)
+        public static bool GetForwardDot(Vector3 _base, Vector3 _target)
         {
             bool _ret = false;
 
-            Vector3 _baseToTarget = _target.position - _base.position;
+            Vector3 _baseToTarget = _target - _base;
             Vector3 _nor = _baseToTarget.normalized;
-            float _dot = Vector3.Dot(_base.forward, _nor);
+            float _dot = Vector3.Dot(Vector3.forward, _nor);
 
             if (_dot > 0)
             {
@@ -141,13 +141,19 @@ namespace AddUnityClass
             return _ret;
         }
 
-        public static bool GetUpDot(Transform _base, Transform _target)
+        /// <summary>
+        /// ãŒü‚«‚È‚çtrue
+        /// </summary>
+        /// <param name="_base"></param>
+        /// <param name="_target"></param>
+        /// <returns></returns>
+        public static bool GetUpDot(Vector3 _base, Vector3 _target)
         {
             bool _ret = false;
 
-            Vector3 _baseToTarget = _target.position - _base.position;
+            Vector3 _baseToTarget = _target - _base;
             Vector3 _nor = _baseToTarget.normalized;
-            float _dot = Vector3.Dot(_base.up, _nor);
+            float _dot = Vector3.Dot(Vector3.up, _nor);
 
             if (_dot > 0)
             {
@@ -161,13 +167,13 @@ namespace AddUnityClass
 
             return _ret;
         }
-        public static bool GetRightDot(Transform _base, Transform _target)
+        public static bool GetRightDot(Vector3 _base, Vector3 _target)
         {
             bool _ret = false;
 
-            Vector3 _baseToTarget = _target.position - _base.position;
+            Vector3 _baseToTarget = _target - _base;
             Vector3 _nor = _baseToTarget.normalized;
-            float _dot = Vector3.Dot(_base.right, _nor);
+            float _dot = Vector3.Dot(Vector3.right, _nor);
 
             if (_dot > 0)
             {

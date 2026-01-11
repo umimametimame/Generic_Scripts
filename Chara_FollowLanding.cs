@@ -37,8 +37,14 @@ public class Chara_FollowLanding : MonoBehaviour
     /// </summary>
     public RayCastAction slopeRay;
 
-
+    /// <summary>
+    /// ‘«‚ª’n‚É‚Â‚¢‚Ä‚¢‚é
+    /// </summary>
     [field: SerializeField, NonEditable] public bool isLanding { get; private set; }
+    /// <summary>
+    /// ’n–Ê‚É–„‚Ü‚Á‚Ä‚¢‚é
+    /// </summary>
+    [field: SerializeField, NonEditable] public bool isBurying { get; private set; }
     [field: SerializeField, NonEditable] public bool isDeadEnd { get; private set; }
     public float FootToRayDistance
     {
@@ -87,12 +93,19 @@ public class Chara_FollowLanding : MonoBehaviour
     private void OnLandRayAction(RaycastHit _hit)
     {
         enginePos = Vector3.zero;
-        if (_hit.collider != footCollider)
-        {
-            float _footToHitDistance = _hit.distance - FootToRayDistance;
+        float _footToHitDistance = Mathf.Abs(_hit.distance - FootToRayDistance);
 
-            Debug.Log($"{_hit.distance} - {FootToRayDistance} = {_footToHitDistance}");
-            if (_footToHitDistance <= FootToRayDistance)
+
+        // ‘«Œ³‚©‚çŒü‚«‚ðŒvŽZ
+        isBurying = AddFunction.GetUpDot(foot.position, _hit.point);
+        if (isBurying == true)
+        {
+            isLanding = true;
+        }
+        else
+        {
+            _footToHitDistance = -_footToHitDistance;
+            if (Mathf.Abs(_footToHitDistance) <= followSlopeDistance)
             {
                 isLanding = true;
             }
@@ -100,27 +113,26 @@ public class Chara_FollowLanding : MonoBehaviour
             {
                 isLanding = false;
             }
-
-
-            if (isLanding == true)
-            {
-                // ŒXŽÎ‚ª‹–—e”ÍˆÍ“à‚È‚ç
-                if (Mathf.Abs(_footToHitDistance) <= followSlopeDistance)
-                {
-                    if (AddFunction.GetUpDot(foot, _hit.transform) == false)
-                    {
-                        _footToHitDistance = -_footToHitDistance;
-                    }
-
-                    enginePos.y = _footToHitDistance;
-                }
-                beforeHitDistance = _hit.distance;
-            }
         }
-        else
+        //Debug.Log($"{_hit.distance} - {FootToRayDistance} = {_footToHitDistance}");
+
+
+
+        if (isLanding == true)
         {
-            isLanding = false;
+
+            if (isBurying == true)
+            {
+                enginePos.y = _footToHitDistance;
+            }
+            else if (isBurying == false)
+            {
+                enginePos.y = _footToHitDistance;
+            }
+
+            beforeHitDistance = _hit.distance;
         }
+        
     }
 
 
@@ -128,6 +140,7 @@ public class Chara_FollowLanding : MonoBehaviour
     {
         enginePos = Vector3.zero;
         isLanding = false;
+        isBurying = false;
     }
     private void OnStayLand(Collision _col)
     {
@@ -155,8 +168,6 @@ public class Chara_FollowLanding : MonoBehaviour
 
         }
     }
-
-
 
     private Vector3 GetFollowLandPos()
     {

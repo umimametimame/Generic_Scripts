@@ -37,6 +37,7 @@ public class RayCastAction : MonoBehaviour
         }
 
         ray = new Ray(transform.position, normalizedRayAngle.normalized);
+        Debug.DrawRay(ray.origin, ray.direction * distance);
         List<RaycastHit> _hits = Physics.RaycastAll(ray, distance).ToList();
 
 
@@ -46,13 +47,11 @@ public class RayCastAction : MonoBehaviour
         {
             bool _isContain = false;
             _isContain = excludeColliders.Contains(_hits[i].collider);
-            Debug.Log($"{_hits[i].transform.name} {_isContain}");
             if (_isContain == false)
             {
                 isHit = true;
                 if (_isClosest == false)
                 {
-                    Debug.Log($"{_hits[i].transform.name} Hit Invoke");
                     _isClosest = true;
                     onHitClosestRayAction?.Invoke(_hits[i]);
                 }
