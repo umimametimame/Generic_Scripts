@@ -26,4 +26,7 @@ public class InputParam_Base : MonoBehaviour
     {
 
     }
+
+
+
 }

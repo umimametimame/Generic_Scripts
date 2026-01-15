@@ -62,7 +62,6 @@ public class GravityParam : MonoBehaviour
         if (gravityActiveInterval.Reaching == true)
         {
             gravityLife.Enable();
-            Debug.Log("Gravity");
         }
     }
 

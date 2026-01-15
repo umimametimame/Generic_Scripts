@@ -37,6 +37,8 @@ public class Param_GamePadSticks
         AssignLeftInput_GamePad();
     }
 
+
+
     public Vector2 GetRightStick
     {
         get
@@ -55,6 +57,46 @@ public class Param_GamePadSticks
             Gamepad _gamepad = Gamepad.current;
 
             return _gamepad.leftStick.ReadValue();
+        }
+    }
+
+    public Vector2 GetNormalizedRightStick
+    {
+        get
+        {
+            Vector2 _ret = GetRightStick;
+            float _velocitySum = _ret.magnitude;
+
+            if (_velocitySum > 0.0f)
+            {
+                _ret = _ret.normalized;
+            }
+            else
+            {
+                _ret = Vector2.zero;
+            }
+
+            return _ret;
+        }
+    }
+
+    public Vector2 GetNormalizedLeftStick
+    {
+        get
+        {
+            Vector2 _ret = GetLeftStick;
+            float _velocitySum = _ret.magnitude;
+
+            if (_velocitySum > 0.0f)
+            {
+                _ret = _ret.normalized;
+            }
+            else
+            {
+                _ret = Vector2.zero;
+            }
+
+            return _ret;
         }
     }
 }

@@ -199,6 +199,15 @@ namespace AddUnityClass
         {
             return Mathf.Repeat(angle - min, max - min) + min;
         }
+        /// <summary>
+        /// angleを360度に丸める
+        /// </summary>
+        /// <param name="angle"></param>
+        /// <returns></returns>
+        public static float GetNormalizedAngle(float angle)
+        {
+            return Mathf.Repeat(angle, 360);
+        }
 
         public static Vector3 GetNormalizedAngles(Vector3 angles, float min, float max)
         {
@@ -209,13 +218,28 @@ namespace AddUnityClass
 
             return retVec3;
         }
+        /// <summary>
+        /// angleを360度に丸める
+        /// </summary>
+        /// <param name="_angles"></param>
+        /// <returns></returns>
+        public static Vector3 GetNormalizedAngles(Vector3 _angles)
+        {
+            Vector3 _ret = Vector3.zero;
+            _ret.x = Mathf.Repeat(_angles.x, 360);
+            _ret.y = Mathf.Repeat(_angles.y, 360);
+            _ret.y = Mathf.Repeat(_angles.y, 360);
+
+            return _ret;
+        }
+
 
         /// <summary>
         /// Vector2を角度(360度)に変更
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static float Vec2ToAngle(Vector2 v)
+        public static float GetAngleFromVector2(Vector2 v)
         {
             return Mathf.Repeat(Mathf.Atan2(v.x, v.y) * Mathf.Rad2Deg, 360);
         }

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1218d26bbef0b543bc027725d5ed784, type: 3}
   m_Name: GravityProfile_Sample
   m_EditorClassIdentifier: Assembly-CSharp::GravityProfile
-  <gravityScale>k__BackingField: {x: 0, y: -3, z: 0}
+  <gravityScale>k__BackingField: {x: 0, y: -20, z: 0}
   <easing>k__BackingField:
     serializedVersion: 2
     m_Curve:

@@ -4,6 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 入力を指定時間維持し、条件達成で発動
+/// </summary>
 [Serializable] public class AdvancedInput
 {
     public BoolFuncs funcs { get; set; } = new BoolFuncs();
@@ -17,20 +20,6 @@ using UnityEngine;
     {
         input = interval;
     }
-    public void Update()
-    {
-        enable = (!input.Reaching);
-        if(enable == true)
-        {
-            if (funcs.Invoke() == true)
-            {
-                action?.Invoke();
-                input.Reset();
-            }
-        }
-
-    }
-
     /// <summary>
     /// 発動可能かを返す
     /// </summary>

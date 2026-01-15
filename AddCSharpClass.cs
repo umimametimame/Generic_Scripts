@@ -254,7 +254,6 @@ public class Vec3Bool
     public bool x;
     public bool y;
     public bool z;
-
     public VecT<bool> ConvertToVecT()
     {
         VecT<bool> returnVecT = new VecT<bool>();
@@ -263,6 +262,177 @@ public class Vec3Bool
         returnVecT.z = z;
 
         return returnVecT;
+    }
+
+    public List<bool> list
+    {
+        get
+        {
+            List<bool> _ret = new List<bool> { x, y, z };
+
+            return _ret;
+        }
+        set
+        {
+            x = value[0];
+            y = value[1];
+            z = value[2];
+        }
+    }
+
+    public bool IsTrue
+    {
+        get
+        {
+            bool _ret = false;
+            for (int i = 0; i < list.Count; ++i)
+            {
+                if (list[i] == true)
+                {
+                    _ret = true;
+                }
+            }
+
+            return _ret;
+        }
+    }
+}
+
+public class Vector3Idx
+{
+    public static float GetAxisValue(Vector3 _vec, int _idx)
+    {
+        float _ret = 0.0f;
+        switch (_idx)
+        {
+            case 0:
+                {
+                    _ret = _vec.x;
+                }
+                break;
+
+
+            case 1:
+                {
+                    _ret = _vec.y;
+                }
+                break;
+
+            case 2:
+                {
+                    _ret = _vec.z;
+                }
+                break;
+
+            default:
+                {
+                    Debug.LogError("Vector3Idx配列外");
+                }
+                break;
+        }
+
+        return _ret;
+    }
+
+    public static Vector3 GetAxisVector3(Vector3 _vec, int _idx)
+    {
+        Vector3 _ret = Vector3.zero;
+        switch (_idx)
+        {
+            case 0:
+                {
+                    _ret.x = _vec.x;
+                }
+                break;
+
+
+            case 1:
+                {
+                    _ret.y = _vec.y;
+                }
+                break;
+
+            case 2:
+                {
+                    _ret.z = _vec.z;
+                }
+                break;
+
+            default:
+                {
+                    Debug.LogError("Vector3Idx配列外");
+                }
+                break;
+        }
+
+        return _ret;
+    }
+
+    public static Vector3 SetAxisValue(Vector3 _retVec, float _setValue, int _idx)
+    {
+        Vector3 _ret = _retVec;
+        switch (_idx)
+        {
+            case 0:
+                {
+                    _ret.x = _setValue;
+                }
+                break;
+
+
+            case 1:
+                {
+                    _ret.y = _setValue;
+                }
+                break;
+
+            case 2:
+                {
+                    _ret.z = _setValue;
+                }
+                break;
+
+            default:
+                {
+                    Debug.LogError("Vector3Idx配列外");
+                }
+                break;
+        }
+
+        return _ret;
+    }
+    public static Vector3 SetAxisValue(Vector3 _retVec, Vector3 _setValue, int _idx)
+    {
+        Vector3 _ret = _retVec;
+        switch (_idx)
+        {
+            case 0:
+                {
+                    _ret.x = _setValue.x;
+                }
+                break;
+
+
+            case 1:
+                {
+                    _ret.y = _setValue.y;
+                }
+                break;
+
+            case 2:
+                {
+                    _ret.z = _setValue.z;
+                }
+                break;
+
+            default:
+                {
+                    Debug.LogError("Vector3Idx配列外");
+                }
+                break;
+        }
+
+        return _ret;
     }
 }
 

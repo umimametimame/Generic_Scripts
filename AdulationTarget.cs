@@ -1,5 +1,6 @@
 using AddUnityClass;
 using Fusion;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -92,16 +93,17 @@ public class AdulationTarget : MonoBehaviour
                         gameObject.transform.position = adulation;
                     }
 
+
                     Quaternion newRotation = gameObject.transform.rotation;
-                    if (rotation.x)
+                    if (rotation.x == true)
                     {
                         newRotation.x = target.transform.rotation.x;
                     }
-                    if (rotation.y)
+                    if (rotation.y == true)
                     {
                         newRotation.y = target.transform.rotation.y;
                     }
-                    if (rotation.z)
+                    if (rotation.z == true)
                     {
                         newRotation.z = target.transform.rotation.z;
                     }

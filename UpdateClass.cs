@@ -319,42 +319,6 @@ public class MomentumPhase
     }
 }
 
-/// <summary>
-/// ˆÚ“®”ÍˆÍ‚ğ‰~Œ`‚É§ŒÀ
-/// </summary>
-[Serializable]
-public class CircleClamp
-{
-
-    [SerializeField] private GameObject center;
-    [field: SerializeField] public GameObject moveObject { get; set; }
-    [field: SerializeField] public float radius { get; private set; }
-    [field: SerializeField, NonEditable] public float currentDistance { get; private set; }
-    public void Initialize(GameObject center, GameObject moveObject)
-    {
-        this.center = center;
-        this.moveObject = moveObject;
-    }
-    public void AdjustByCenter()
-    {
-        moveObject.transform.position = center.transform.position;
-    }
-    public void Limit()
-    {
-        currentDistance = Vector2.Distance(moveObject.transform.position, center.transform.position);
-
-        if (currentDistance > radius)
-        {
-            Debug.Log("Limitting");
-
-            Vector3 nor = moveObject.transform.position - center.transform.position;
-            moveObject.transform.position = center.transform.position + nor.normalized * radius;
-            currentDistance = Vector2.Distance(moveObject.transform.position, center.transform.position);
-
-        }
-
-    }
-}
 
 [Serializable]
 public class MoveCircleSurface

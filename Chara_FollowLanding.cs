@@ -142,32 +142,6 @@ public class Chara_FollowLanding : MonoBehaviour
         isLanding = false;
         isBurying = false;
     }
-    private void OnStayLand(Collision _col)
-    {
-        Collider _collider = _col.collider;
-        isLanding = true;
-        footCollider.isTrigger = true;
-
-        if (_collider is TerrainCollider)
-        {
-        }
-    }
-    private void OnExitLand(Collider _col)
-    {
-        isLanding = false;
-        footCollider.isTrigger = false;
-        if (_col is TerrainCollider)
-        {
-        }
-    }
-
-    private void OnDeadEndRayAction_Head(RaycastHit _hit)
-    {
-        if (_hit.collider is TerrainCollider)
-        {
-
-        }
-    }
 
     private Vector3 GetFollowLandPos()
     {

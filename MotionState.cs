@@ -86,17 +86,19 @@ public class MotionState_Base
     /// </summary>
     [field: SerializeField, NonEditable] public Interval motionTime { get; private set; }
     public CutInType cutInType;
-    public Life exist { get; private set; } = new Life();
+    public Life life { get; private set; } = new Life();
+    [field: SerializeField, NonEditable] public Vector3 velocity { get; protected set; }
     [field: SerializeField, NonEditable] public List<TransitionalMotionThreshold> transitionalPeriod { get; set; }
     [field: SerializeField] public MotionStateProfile profile { get; set; }
 
-    public void Initialize_Base()
+    public virtual void Initialize_Base()
     {
         AssignProfile();
-        exist.Initialize();
-        exist.start += Reset;
-        exist.enable += motionTime.Update;
-        motionTime.reachAction += exist.Finish;
+        life.Initialize();
+        life.start += Reset;
+        life.enable += motionTime.Update;
+        motionTime.reachAction += life.Finish;
+        velocity = Vector3.zero;
     }
 
     private void UpdateTransitionList()
@@ -162,7 +164,7 @@ public class MotionState_Base
                 case MotionType.Rigor:
                     {
                         motionTime.Initialize(false, true, profile.motionTime);
-                        motionTime.reachAction += exist.Finish;
+                        motionTime.reachAction += life.Finish;
                     }
                 break;
             }
@@ -221,17 +223,18 @@ public class MotionState_Base
         }
 
     }
+
     public void Update()
     {
         if (enable == true)
         {
-            exist.Enable();
+            life.Enable();
         }
         else
         {
-            exist.Disable();
+            life.Disable();
         }
-        exist.Update();
+        life.Update();
         UpdateTransitionList();
     }
 }
