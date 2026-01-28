@@ -5,11 +5,11 @@ using UnityEngine;
 
 
 [CreateAssetMenu(fileName = "MotionStateProfile", menuName = "ScriptableObject/MotionStateProfile")]
-public class MotionStateProfile : ScriptableObject
+public class MotionStateProfile<T> : ScriptableObject where T : Enum
 {
 
     [field: SerializeField] public MotionType motionType { get; private set; }
-    [field: SerializeField] public GeneralMotion state { get; private set; }
+    [field: SerializeField] public T state { get; private set; }
     /// <summary>
     /// Ç±ÇÃÉÇÅ[ÉVÉáÉìÇ™Ç«Ç§Ç‚Ç¡ÇƒäÑÇËçûÇﬁÇ©
     /// </summary>
@@ -20,14 +20,14 @@ public class MotionStateProfile : ScriptableObject
     [field: SerializeField] public List<TransitionalProfile_List> motionStateValueList { get; private set; } = new List<TransitionalProfile_List>();
     [field: SerializeField] public float motionTime { get; private set; }
 
-    public List<TransitionalMotionThreshold> GetTransitionalList
+    public List<TransitionalMotionThreshold<T>> GetTransitionalList
     {
         get
         {
-            List<TransitionalMotionThreshold> returnList = new List<TransitionalMotionThreshold>();
+            List<TransitionalMotionThreshold<T>> returnList = new List<TransitionalMotionThreshold<T>>();
             for (int i = 0; i < motionStateValueList.Count; i++)
             {
-                TransitionalMotionThreshold addTransitional = new TransitionalMotionThreshold();
+                TransitionalMotionThreshold<T> addTransitional = new TransitionalMotionThreshold<T>();
                 addTransitional.beforeMotion = motionStateValueList[i].beforeMotion;
                 addTransitional.thresholdRatio.Initialize(motionStateValueList[i].thresholdRange);
                 returnList.Add(addTransitional);
@@ -53,7 +53,7 @@ public class MotionStateProfile : ScriptableObject
     [Serializable]
     public class TransitionalProfile_List
     {
-        public GeneralMotion beforeMotion;
+        public T beforeMotion;
         public MinMax thresholdRange;
     }
 

@@ -54,12 +54,12 @@ public static class Convert_MotionState
 
 
 [Serializable]
-public class TransitionalMotionThreshold
+public class TransitionalMotionThreshold<T> where T : Enum
 {
     /// <summary>
     /// beforeMotionÇÃÇ«Ç±Ç©ÇÁîhê∂Ç≈Ç´ÇÈÇ©
     /// </summary>
-    [field: SerializeField] public GeneralMotion beforeMotion { get; set; }
+    [field: SerializeField] public T beforeMotion { get; set; }
     [field: SerializeField] public Range thresholdRatio { get; set; } = new Range();
 
     public bool IsReaching
@@ -76,24 +76,23 @@ public class TransitionalMotionThreshold
 /// <br/>åpè≥êÊÇ≈èàóùãLç⁄
 /// </summary>
 [Serializable]
-public class MotionState_Base
+public class MotionState_Base<T> where T : Enum
 {
     [field: SerializeField, NonEditable] public MotionType motionType { get; private set; }
-    [field: SerializeField, NonEditable] public GeneralMotion state { get; protected set; }
+    [field: SerializeField, NonEditable] public T state { get; protected set; }
     [field: SerializeField, NonEditable] public bool enable;
     /// <summary>
     /// ÉÇÅ[ÉVÉáÉìéûä‘Ç∆åªç›ín
     /// </summary>
-    [field: SerializeField, NonEditable] public Interval motionTime { get; private set; }
+    [field: SerializeField, NonEditable] public Interval motionTime { get; private set; } = new Interval();
     public CutInType cutInType;
     public Life life { get; private set; } = new Life();
     [field: SerializeField, NonEditable] public Vector3 velocity { get; protected set; }
-    [field: SerializeField, NonEditable] public List<TransitionalMotionThreshold> transitionalPeriod { get; set; }
-    [field: SerializeField] public MotionStateProfile profile { get; set; }
+    [field: SerializeField, NonEditable] public List<TransitionalMotionThreshold<T>> transitionalPeriod { get; set; }
+    [field: SerializeField] public MotionStateProfile<T> profile { get; set; }
 
     public virtual void Initialize_Base()
     {
-        AssignProfile();
         life.Initialize();
         life.start += Reset;
         life.enable += motionTime.Update;
@@ -120,7 +119,7 @@ public class MotionState_Base
     /// </summary>
     [field: SerializeField, NonEditable] public List<Range> actionByTimeRange { get; set; } = new List<Range>();
 
-    public void AssignProfile(MotionStateProfile newProfile = null)
+    public void AssignProfile(MotionStateProfile<T> newProfile = null)
     {
         if (newProfile != null)
         {
@@ -139,7 +138,7 @@ public class MotionState_Base
             }
             else
             {
-                TransitionalMotionThreshold add = new TransitionalMotionThreshold();
+                TransitionalMotionThreshold<T> add = new TransitionalMotionThreshold<T>();
 
 
                 transitionalPeriod = profile.GetTransitionalList;
@@ -175,23 +174,23 @@ public class MotionState_Base
     }
     private void ConvertTransitionalList()
     {
-        List<GeneralMotion> states = ConvertEnums<GeneralMotion>.GetList();
-        transitionalPeriod = new List<TransitionalMotionThreshold>();
+        List<PlayerMotion> states = ConvertEnums<PlayerMotion>.GetList();
+        transitionalPeriod = new List<TransitionalMotionThreshold<T>>();
 
-        TransitionalMotionThreshold newTransitional = new TransitionalMotionThreshold();
+        TransitionalMotionThreshold<T> newTransitional = new TransitionalMotionThreshold<T>();
         switch (cutInType)
         {
             case CutInType.ReverseHandy:
 
                 for (int i = 0; i < states.Count; ++i)
                 {
-                    newTransitional = new TransitionalMotionThreshold();
+                    newTransitional = new TransitionalMotionThreshold<T>();
                     newTransitional.thresholdRatio.Initialize(0, 1);
-                    newTransitional.beforeMotion = states[i];
+                    newTransitional.beforeMotion = (T)(object)states[i];
                     transitionalPeriod.Add(newTransitional);
                     for (int j = 0; j < profile.motionStateValueList.Count; j++)
                     {
-                        if (states[i] == profile.motionStateValueList[j].beforeMotion)
+                        if (states[i].Equals(profile.motionStateValueList[j].beforeMotion) == true)
                         {
                             transitionalPeriod.RemoveAt(transitionalPeriod.Count - 1);
                         }
@@ -201,8 +200,8 @@ public class MotionState_Base
             case CutInType.IsAll:
                 for (int i = 0; i < states.Count; ++i)
                 {
-                    newTransitional = new TransitionalMotionThreshold();
-                    newTransitional.beforeMotion = states[i];
+                    newTransitional = new TransitionalMotionThreshold<T>();
+                    newTransitional.beforeMotion = (T)(object)states[i];
                     newTransitional.thresholdRatio.Initialize(0, 1);
                     transitionalPeriod.Add(newTransitional);
                 }
@@ -211,10 +210,10 @@ public class MotionState_Base
             case CutInType.OtherMyself:
                 for (int i = 0; i < states.Count; ++i)
                 {
-                    newTransitional = new TransitionalMotionThreshold();
-                    if (states[i] != state)
+                    newTransitional = new TransitionalMotionThreshold<T>();
+                    if (states[i].Equals(state) == false)
                     {
-                        newTransitional.beforeMotion = states[i];
+                        newTransitional.beforeMotion = (T)(object)states[i];
                         newTransitional.thresholdRatio.Initialize(0, 1);
                         transitionalPeriod.Add(newTransitional);
                     }
@@ -252,23 +251,23 @@ public enum MotionType
     Rigor,
 }
 
-public static class ConvertEnums<T1> where T1 : Enum
+public static class ConvertEnums<T> where T : Enum
 {
-    public static Dictionary<T1, MotionState_Base> GetDic()
+    public static Dictionary<T, MotionState_Base<T>> GetDic()
     {
-        Dictionary<T1, MotionState_Base> newDic = new Dictionary<T1, MotionState_Base>();
-        foreach (T1 s in Enum.GetValues(typeof(T1)))
+        Dictionary<T, MotionState_Base<T>> newDic = new Dictionary<T, MotionState_Base<T>>();
+        foreach (T s in Enum.GetValues(typeof(T)))
         {
-            newDic.Add(s, new MotionState_Base());
+            newDic.Add(s, new MotionState_Base<T>());
         }
 
         return newDic;
     }
 
-    public static List<T1> GetList()
+    public static List<T> GetList()
     {
-        List<T1> newList = new List<T1>();
-        foreach (T1 t in Enum.GetValues(typeof(T1)))
+        List<T> newList = new List<T>();
+        foreach (T t in Enum.GetValues(typeof(T)))
         {
             newList.Add(t);
         }

@@ -138,26 +138,22 @@ public class BoolFuncs
     public bool Invoke()
     {
         int i;
+        bool _ret = true;
+
         for (i = 0; i < funcs.Count; ++i)
         {
             if (funcs[i].Invoke() == false)
             {
-                return false;
+                _ret = false;
             }
         }
 
         if (i == 0)
         {
-            Debug.Log("Func‚ª‚ ‚è‚Ü‚¹‚ñ");
+            _ret = true;
         }
-        return true;
+        return _ret;
 
-    }
-
-    public static BoolFuncs operator +(BoolFuncs a, Func<bool> b)
-    {
-        a.Add(b);
-        return a;
     }
 }
 

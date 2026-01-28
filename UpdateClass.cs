@@ -908,7 +908,6 @@ public class ValueChecker<T> where T : struct
 {
     [field: SerializeField, NonEditable] public T value { get; private set; }
     [field: SerializeField, NonEditable] public T beforeValue { get; private set; }
-    [field: SerializeField, NonEditable] public bool changed { get; private set; }
     public Action changedAction { get; set; }
 
     public void Initialize(T _value)
@@ -921,22 +920,33 @@ public class ValueChecker<T> where T : struct
     {
         value = _value;
         beforeValue = _value;
-        changed = false;
     }
 
     public void Update(T _value)
     {
         value = _value;
-        changed = !_value.Equals(beforeValue);   // ïœçXÇ≥ÇÍÇƒÇ¢ÇΩÇÁ
 
-        if (changed == true)
+        if (IsChange == true)
         {
             changedAction?.Invoke();
+            beforeValue = value;
         }
 
-        beforeValue = value;
     }
 
+    public bool IsChange
+    {
+        get
+        {
+            bool _ret = false;
+            if (value.Equals(beforeValue) == false)
+            {
+                _ret = true;
+            }
+
+            return _ret;
+        }
+    }
 }
 
 [Serializable]
@@ -1589,8 +1599,8 @@ public class AnimatorParameter
         List<AnimatorControllerParameter> aniParamList = new List<AnimatorControllerParameter>();
         aniParamList = _animator.parameters.ToList();
 
-        List<GeneralMotion> stateList = new List<GeneralMotion>();
-        stateList = EnumOperator.Get<GeneralMotion>();
+        List<PlayerMotion> stateList = new List<PlayerMotion>();
+        stateList = EnumOperator.Get<PlayerMotion>();
 
         // êÈåæçœÇ›ÇÃAnimatorControllerParameterÇèâä˙âª
         MotionState.type = AnimatorControllerParameterType.Int;

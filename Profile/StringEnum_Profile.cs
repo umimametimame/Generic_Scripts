@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SrtingEnum", menuName = "Scriptable Objects/SrtingEnum")]
+[CreateAssetMenu(fileName = "SrtingEnum", menuName = "ScriptableObjectSrtingEnum")]
 public class StringEnum_Profile : ScriptableObject
 {
     [field: SerializeField] public List<string> enums { get; private set; } = new List<string>();

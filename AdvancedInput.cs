@@ -11,15 +11,25 @@ using UnityEngine;
 {
     public BoolFuncs funcs { get; set; } = new BoolFuncs();
     public Action action { get; set; }
-    
-    public Interval input { get; private set; } = new Interval();
-    public bool enable;
-
-
+    [field: SerializeField] public Interval inputTiming { get; private set; } = new Interval();
+    [field: SerializeField] public ValueChecker<float> value { get; private set; } = new ValueChecker<float>();
     public void Initialize(Interval interval)
     {
-        input = interval;
+        inputTiming = interval;
+        value.Initialize(0.0f);
     }
+
+    public void OnInput(float _value)
+    {
+        value.Update(_value);
+        inputTiming.Reset();
+    }
+
+    public void Update()
+    {
+        inputTiming.Update();
+    }
+
     /// <summary>
     /// ”­“®‰Â”\‚©‚ð•Ô‚·
     /// </summary>
@@ -27,18 +37,30 @@ using UnityEngine;
     {
         get
         {
-            if(!input.Reaching == true)
+            bool _ret = false;
+            if (inputTiming.interval < 0)
+            {
+                if (value.value >= 1.0f)
+                {
+                    if (funcs.Invoke() == true)
+                    {
+                        _ret = true;
+                    }
+                }
+            }
+            else if(inputTiming.Reaching == false)
             {
                 if (funcs.Invoke() == true)
                 {
-                    return true;
+                    _ret = true;
                 }
 
             }
 
-            return false;
+            return _ret;
         }
     }
+
 
     public void FuncReset()
     {

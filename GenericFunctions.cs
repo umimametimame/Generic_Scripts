@@ -654,8 +654,35 @@ namespace AddUnityClass
             return variables;
         }
     }
+    public static class GetTypeList
+    {
+        public static List<T> Get<T>() where T : class, new()
+        {
+            var baseType = typeof(T);
 
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(assembly =>
+                {
+                    try
+                    {
+                        return assembly.GetTypes();
+                    }
+                    catch (ReflectionTypeLoadException e)
+                    {
+                        return e.Types.Where(t => t != null);
+                    }
+                })
+                .Where(type =>
+                    baseType.IsAssignableFrom(type) &&
+                    type != baseType &&
+                    !type.IsAbstract &&
+                    !type.IsInterface
+                )
+                .Select(type => Activator.CreateInstance(type) as T)
+                .ToList();
+        }
 
+    }
     public static class ConvertEnums<T1, T2> where T1 : Enum where T2 : class
     {
         public static Dictionary<T1, T2> GetDic()

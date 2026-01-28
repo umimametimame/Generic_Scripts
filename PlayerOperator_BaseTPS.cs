@@ -31,11 +31,32 @@ public class PlayerOperator_BaseTPS : MonoBehaviour
         cameraController.ChangeSeeSawAngle(LookInputVelocity);
     }
 
+    public Param_GamePadStick MoveStick
+    {
+        get
+        {
+            Param_GamePadStick _ret = inputParam.sticks.leftStick;
+
+            return _ret;
+        }
+    }
+
+    public Param_GamePadStick ViewStick
+    {
+        get
+        {
+            Param_GamePadStick _ret = inputParam.sticks.rightStick;
+
+            return _ret;
+        }
+    }
+
+
     public Vector3 MoveInputVelocity
     {
         get
         {
-            Vector3 _ret = ConvertStickInputTo3D.GetMoveVelocity(inputParam.sticks.GetNormalizedLeftStick);
+            Vector3 _ret = ConvertStickInputTo3D.GetMoveVelocity(MoveStick.GetNormalizedStick);
 
             return _ret;
         }
@@ -56,7 +77,7 @@ public class PlayerOperator_BaseTPS : MonoBehaviour
     {
         get
         {
-            Vector3 _ret = ConvertStickInputTo3D.GetLookVelocity(inputParam.sticks.GetRightStick);
+            Vector3 _ret = ConvertStickInputTo3D.GetLookVelocity(ViewStick.GetNormalizedStick);
             return _ret;
         }
     }

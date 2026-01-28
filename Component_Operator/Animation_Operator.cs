@@ -5,34 +5,46 @@ using Unity.VisualScripting;
 using UnityEditor.Animations;
 using UnityEngine;
 
-public class Animation_Operator : MonoBehaviour
+[Serializable]
+public class Animation_Operator<T> where T:Enum
 {
     private Animator animator;
     [field: NonEditable] public int currentAnimationState = -1;
     private ValueChecker<int> animationStateChecker = new ValueChecker<int>();
+    private string animationTriggerName = "";
     public static string AnimationStateIdx = nameof(AnimationStateIdx);
 
-    private void Awake()
+    public void Initialize(Animator _animator)
     {
-        animationStateChecker.changedAction += ChangeAnimation_SetInteger;
-    }
-    private void Start()
-    {
-        animator = GetComponent<Animator>();
+        animator = _animator;
         AssignConditions_Enum();
+        animationStateChecker.Initialize(currentAnimationState);
+        animationStateChecker.changedAction += OnChangeAnimationState_SetInteger;
+        animationTriggerName = "";
     }
 
-    private void Update()
+    public void Update()
     {
+        if (IsAnimationTrigger == true)
+        {
+            animator.SetTrigger(animationTriggerName);
+            animationTriggerName = "";
+        }
         animationStateChecker.Update(currentAnimationState);
     }
 
     /// <summary>
     /// currentAnimationStateÇ©ÇÁAnimationÇçƒê∂Ç∑ÇÈ
     /// </summary>
-    public void ChangeAnimation_SetInteger()
+    public void OnChangeAnimationState_SetInteger()
     {
         animator.SetInteger(AnimationStateIdx, currentAnimationState);
+    }
+
+    public void OnTrigger(string _triggerName)
+    {
+        Debug.Log($"{_triggerName} Trigger");
+        animationTriggerName = _triggerName;
     }
     [ContextMenu(nameof(AssignConditions_Enum))]
     public void AssignConditions_Enum()
@@ -46,14 +58,30 @@ public class Animation_Operator : MonoBehaviour
             for (int i = 0; i < _layers.Count; ++i)
             {
                 AnimatorStateMachine _childStates = _layers[i].stateMachine;
-                UnityEditor.Animations.AnimatorState _state = new AnimatorState();
 
+                // anyStateÇ©ÇÁÇÃTransition
                 foreach (AnimatorStateTransition _tra in _childStates.anyStateTransitions)
                 {
-                    _tra.conditions = Convert_MotionState.AssignCondition_Enum<GeneralMotion>(_tra.destinationState, AnimationStateIdx);
+                    _tra.conditions = Convert_MotionState.AssignCondition_Enum<T>(_tra.destinationState, AnimationStateIdx);
                     _tra.hasExitTime = false;
+                    _tra.canTransitionToSelf = false;
                 }
             }
+        }
+    }
+
+    public bool IsAnimationTrigger
+    {
+        get
+        {
+            bool _ret = false;
+
+            if (animationTriggerName != "")
+            {
+                _ret = true;
+            }
+
+            return _ret;
         }
     }
 
